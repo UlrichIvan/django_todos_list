@@ -1,0 +1,14 @@
+asgiref==3.8.1
+astroid==3.3.9
+dill==0.4.0
+Django==5.2
+isort==6.0.1
+mccabe==0.7.0
+platformdirs==4.3.7
+psycopg2==2.9.10
+pylint==3.3.6
+pylint-django==2.6.1
+pylint-plugin-utils==0.8.2
+python-dotenv==1.1.0
+sqlparse==0.5.3
+tomlkit==0.13.2
