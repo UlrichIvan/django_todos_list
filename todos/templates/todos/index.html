@@ -29,16 +29,24 @@
 				<span class=" text-capitalize brand-name">Todos list</span>
 			</div>
 			<ul class="nav-bar-actions list-unstyled mb-0">
-				<li class="nav-item add_todo" title="add todo">
-					<img src="{% static 'todos/images/plus.png'%}" width="30" alt="add todo"/>
-				</li>
+				<a href="{% url 'todo_list:todo_add' %}">
+					<li class="nav-item add_todo" title="add todo">
+						<img src="{% static 'todos/images/plus.png'%}" width="30" alt="add todo"/>
+					</li>
+				</a>
 			</ul>
 		</nav>
 		<div class="todos-list d-flex align-items-center justify-content-center text-black">
-			<div class="no-todos">
-				<p>You don't have à todos list</p>
-				<div class="btn btn-success w-100">add todo</div>
-			</div>
+			{% for todo in todos %}
+				{{todo.title}}
+			{% empty %}
+				<div class="no-todos">
+					<p>You don't have à todos list</p>
+					<a href="{% url 'todo_list:todo_add' %}">
+						<div class="btn btn-success w-100">add todo</div>
+					</a>
+				</div>
+			{% endfor %}
 		</div>
 	</div>
 {% endblock %}
