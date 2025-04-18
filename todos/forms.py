@@ -5,4 +5,10 @@ from .models import Todo
 class TodoForm(ModelForm):
     class Meta:
         model = Todo
-        fields = "__all__"
+        exclude = ["created_at", "updated_at", "deleted_at", "done"]
+
+
+class EditTodoForm(ModelForm):
+    class Meta:
+        model = Todo
+        fields = ["title", "content", "done"]

@@ -29,24 +29,84 @@
 				<span class=" text-capitalize brand-name">Todos list</span>
 			</div>
 			<ul class="nav-bar-actions list-unstyled mb-0">
-				<a href="{% url 'todo_list:todo_add' %}">
+				<a href="{% url 'todo_list:add_todo' %}">
 					<li class="nav-item add_todo" title="add todo">
 						<img src="{% static 'todos/images/plus.png'%}" width="30" alt="add todo"/>
 					</li>
 				</a>
 			</ul>
 		</nav>
-		<div class="todos-list d-flex align-items-center justify-content-center text-black">
-			{% for todo in todos %}
-				{{todo.title}}
-			{% empty %}
+		<div class="todos-list d-flex justify-content-center text-black">
+
+			{% if todos %}
+				<div class="container-fluid">
+					<div class="row h-100 justify-content-between">
+						<div class="col-6 px-0">
+							{% if todos.todos_not_done %}
+								<div class="todos_not_done">
+									<ul class="list-group">
+										{% for todo in todos.todos_not_done %}
+											<li class="list-group-item d-flex justify-content-between align-items-center m-2">
+												<div class="todo_title">{{todo.title}}</div>
+
+												<a href="{% url 'todo_list:edit_todo' todo.id %}">
+													<div class="todo_action btn btn-info text-white">edit</div>
+												</a>
+
+											</li>
+										{% endfor %}
+									</ul>
+								</div>
+							{% else %}
+								<div class="container-fluid h-100">
+									<div class="row align-items-center h-100 justify-content-center">
+										<div class="no-todos col-12">
+											<p class="text-center">your todos created will be appear here</p>
+										</div>
+									</div>
+								</div>
+							{% endif %}
+
+						</div>
+						<div class="col-6 px-0">
+							<div class="border-start h-100">
+								{% if todos.todos_done %}
+									<div class="todos_done">
+										<ul class="list-group">
+											{% for todo in todos.todos_done %}
+												<li class="list-group-item d-flex justify-content-between align-items-center m-2">
+													<div class="todo_title">{{todo.title}}</div>
+
+													<a href="{% url 'todo_list:edit_todo' todo.id %}">
+														<div class="todo_action btn btn-info text-white">edit</div>
+													</a>
+												</li>
+											{% endfor %}
+										</ul>
+									</div>
+								{% else %}
+									<div class="container-fluid h-100">
+										<div class="row align-items-center h-100 justify-content-center">
+											<div class="no-todos col-12">
+												<p class="text-center">your todos done will be appear here</p>
+											</div>
+										</div>
+									</div>
+								{% endif %}
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+			{% else %}
 				<div class="no-todos">
 					<p>You don't have à todos list</p>
-					<a href="{% url 'todo_list:todo_add' %}">
+					<a href="{% url 'todo_list:add_todo' %}">
 						<div class="btn btn-success w-100">add todo</div>
 					</a>
 				</div>
-			{% endfor %}
+			{% endif %}
 		</div>
 	</div>
 {% endblock %}

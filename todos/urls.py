@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import TodosListView, Todos
+from .views import TodosListView, AddTodo, EditTodo
 
 app_name = "todo_list"
 urlpatterns = [
-    path("", TodosListView.as_view(), name="todo_index"),
-    path("add", Todos.as_view(), name="todo_add"),
-    path("save", Todos.as_view(), name="todo_save"),
+    path("", TodosListView.as_view(), name="index"),
+    path("add", AddTodo.as_view(), name="add_todo"),
+    path("edit/<int:id>", EditTodo.as_view(), name="edit_todo"),
 ]
