@@ -60,6 +60,7 @@
 								</div>
 								<input class="btn btn-primary w-100" type="submit" value="update todo">
 								{% csrf_token %}
+								<a class="btn btn-danger my-2 w-100" href="{% url 'todo_list:index' %}">Cancel update</a>
 							</form>
 						</div>
 					</div>

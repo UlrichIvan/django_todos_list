@@ -16,6 +16,14 @@
 			max-height: calc(100vh - 63px);
 			overflow-y: auto;
 		}
+		.todos_done .list-group-item {
+			background-color: lightgreen;
+			/* color: #112A46; */
+			color: #123;
+		}
+		.todo-actions .btn-show {
+			background-color: #044B5B;
+		}
 	</style>
 {% endblock %}
 
@@ -46,13 +54,24 @@
 								<div class="todos_not_done">
 									<ul class="list-group">
 										{% for todo in todos.todos_not_done %}
-											<li class="list-group-item d-flex justify-content-between align-items-center m-2">
-												<div class="todo_title">{{todo.title}}</div>
-
-												<a href="{% url 'todo_list:edit_todo' todo.id %}">
-													<div class="todo_action btn btn-info text-white">edit</div>
-												</a>
-
+											<li class="list-group-item d-flex justify-content-between align-items-center todo_not_done m-2" {% if todo.content %} title="{{todo.content}}" {% endif %}>
+												<div class="container-fluid px-0">
+													<div class="row justify-content-between align-items-center">
+														<div class="col-8">
+															<div class="todo_title">{{todo.title}}</div>
+														</div>
+														<div class="col-4">
+															<div class="todo-actions d-flex justify-content-end">
+																<a class="mx-1" href="{% url 'todo_list:edit_todo' todo.id %}">
+																	<div class="todo_action btn btn-primary text-white">edit</div>
+																</a>
+																<a class="mx-1" href="{% url 'todo_list:details_todo' todo.id %}">
+																	<div class="todo_action btn btn-show text-white">show</div>
+																</a>
+															</div>
+														</div>
+													</div>
+												</div>
 											</li>
 										{% endfor %}
 									</ul>
@@ -61,7 +80,7 @@
 								<div class="container-fluid h-100">
 									<div class="row align-items-center h-100 justify-content-center">
 										<div class="no-todos col-12">
-											<p class="text-center">your todos created will be appear here</p>
+											<p class="text-center">yours todos created will be appear here</p>
 										</div>
 									</div>
 								</div>
@@ -72,14 +91,29 @@
 							<div class="border-start h-100">
 								{% if todos.todos_done %}
 									<div class="todos_done">
-										<ul class="list-group">
+										<ul class="list-group todos_done">
 											{% for todo in todos.todos_done %}
-												<li class="list-group-item d-flex justify-content-between align-items-center m-2">
-													<div class="todo_title">{{todo.title}}</div>
-
-													<a href="{% url 'todo_list:edit_todo' todo.id %}">
-														<div class="todo_action btn btn-info text-white">edit</div>
-													</a>
+												<li class="list-group-item d-flex justify-content-between align-items-center m-2 todo_done fw-bolder" {% if todo.content %} title="{{todo.content}}" {% endif %}>
+													<div class="container-fluid px-0">
+														<div class="row justify-content-between align-items-center">
+															<div class="col-8">
+																<div class="todo_title">{{todo.title}}</div>
+															</div>
+															<div class="col-4">
+																<div class="todo-actions d-flex justify-content-end">
+																	<a class="mx-1" href="{% url 'todo_list:edit_todo' todo.id %}">
+																		<div class="todo_action btn btn-primary text-white">edit</div>
+																	</a>
+																	<a class="mx-1" href="{% url 'todo_list:details_todo' todo.id %}">
+																		<div class="todo_action btn btn-show text-white">show</div>
+																	</a>
+																	<a class="mx-1" href="{% url 'todo_list:delete_todo' todo.id %}">
+																		<div class="todo_action btn btn-danger text-white">delete</div>
+																	</a>
+																</div>
+															</div>
+														</div>
+													</div>
 												</li>
 											{% endfor %}
 										</ul>

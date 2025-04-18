@@ -55,6 +55,7 @@
 									<textarea name="content" placeholder="todo description" class="form-control" id="content">{{todo.content.value}}</textarea>
 								</div>
 								<input class="btn btn-primary w-100" type="submit" value="save todo">
+								<a class="btn btn-danger my-2 w-100" href="{% url 'todo_list:index' %}">Cancel</a>
 								{% csrf_token %}
 							</form>
 						</div>

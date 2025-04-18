@@ -1,0 +1,65 @@
+{% extends "../base.html" %}
+
+{% load static %}
+
+{% block css %}
+	<style>
+		input,
+		textarea {
+			text-transform: capitalize;
+		}
+		.container-wrapper {
+			box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.24);
+			border-radius: 20px;
+		}
+		body {
+			overflow: hidden;
+		}
+		#id_title_error > li {
+			list-style-type: none;
+			color: red;
+		}
+		#id_title_error {
+			padding-left: 0;
+		}
+	</style>
+{% endblock %}
+
+
+{% block body %}
+	<div class="container-fluid text-black text-capitalize px-0">
+		<div class="form-wrapper vh-100 vw-100 overflow-auto d-flex align-items-center justify-content-center">
+			<div class="container-wrapper mx-4 py-3 w-100">
+				<div class="container">
+					<div class="row align-items-center">
+						<div class="col-md-5 d-none d-md-block">
+							<div class="todo-image">
+								<img src="{% static 'todos/images/todo_details.jpg'%}" class="w-100" alt="todo_image_logo">
+							</div>
+						</div>
+						<div class="col-12 col-md-7">
+							<div class="todo_form w-100 text-capitalize p-3">
+								<h2 class="text-center">About todo</h2>
+								<table class="table">
+									<tbody>
+										{% for name,value in todo.get_fields %}
+											<tr>
+												<th scope="row">{{name}}</th>
+												<td>
+													{% if value %}
+														{{value}}
+													{% endif %}
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+							<a class="btn btn-info text-white my-2 w-100" href="{% url 'todo_list:index' %}">go back</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
