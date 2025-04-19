@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
@@ -50,36 +50,35 @@ class EditTodo(View):
     template_name = "todos/edit_todo.html"
 
     def get(self, request, id) -> HttpResponse:
-        try:
-            todo = Todo.objects.get(pk=id)
-            edit_todo = EditTodoForm(instance=todo)
-            return render(
-                request, self.template_name, {"edit_todo": edit_todo, "todo": todo}
-            )
-        except Todo.DoesNotExist:
-            return HttpResponseNotFound(content="unable to edit todo")
+
+        todo = get_object_or_404(Todo, pk=id)
+
+        edit_todo = EditTodoForm(instance=todo)
+
+        return render(
+            request, self.template_name, {"edit_todo": edit_todo, "todo": todo}
+        )
 
     def post(self, request, id) -> HttpResponse | None:
-        try:
-            edit_form = EditTodoForm(request.POST)
-            todo = Todo.objects.get(pk=id)
-            if edit_form.is_valid():
-                data = edit_form.cleaned_data
-                todo.title = data.get("title", todo.title)
-                todo.content = data.get("content", todo.content)
-                todo.done = data.get("done", todo.done)
-                todo.updated_at = timezone.now()
-                todo.save(force_update=True)
-                return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
 
-            return render(
-                request,
-                self.template_name,
-                {"errors": edit_form.errors, "edit_todo": edit_form, "todo": todo},
-            )
+        todo = get_object_or_404(Todo, pk=id)
 
-        except Todo.DoesNotExist:
-            return HttpResponseNotFound(content="unable to edit todo")
+        edit_form = EditTodoForm(request.POST)
+
+        if edit_form.is_valid():
+            data = edit_form.cleaned_data
+            todo.title = data.get("title", todo.title)
+            todo.content = data.get("content", todo.content)
+            todo.done = data.get("done", todo.done)
+            todo.updated_at = timezone.now()
+            todo.save(force_update=True)
+            return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
+
+        return render(
+            request,
+            self.template_name,
+            {"errors": edit_form.errors, "edit_todo": edit_form, "todo": todo},
+        )
 
 
 class TodoDetails(DetailView):
@@ -93,21 +92,11 @@ class TodoDelete(View):
     context_object_name = "todo"
 
     def get(self, request, id) -> HttpResponse:
-        try:
-            todo = Todo.objects.get(pk=id)
-            return render(request, self.template_name, {"todo": todo})
-        except Todo.DoesNotExist:
-            return HttpResponseNotFound(content="unable to delete todo")
+        todo = get_object_or_404(Todo, pk=id)
+        return render(request, self.template_name, {"todo": todo})
 
     def post(self, _, id) -> HttpResponse | None:
-        try:
-            todo = Todo.objects.get(pk=id)
-            if todo:
-                todo.deleted_at = timezone.now()
-                todo.save()
-                return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
-
-            return HttpResponseNotFound(content="unable to delete todo")
-
-        except Todo.DoesNotExist:
-            return HttpResponseNotFound(content="unable to edit todo")
+        todo = get_object_or_404(Todo, pk=id)
+        todo.deleted_at = timezone.now()
+        todo.save()
+        return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))

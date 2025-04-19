@@ -1,8 +1,10 @@
 from django.utils import timezone
 from django.db import models
+import uuid
 
 
 class Todo(models.Model):
+    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     title = models.CharField(max_length=255, null=False, blank=False, unique=False)
     content = models.TextField(null=True, blank=True)
     done = models.BooleanField(default=False)
