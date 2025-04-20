@@ -4,12 +4,12 @@
   "settings": {
     "width": 2000,
     "height": 2000,
-    "scrollTop": -127.9762,
+    "scrollTop": -14.881,
     "scrollLeft": 0,
     "zoomLevel": 1,
     "show": 431,
     "database": 16,
-    "databaseName": "",
+    "databaseName": "todos_db",
     "canvasType": "ERD",
     "language": 1,
     "tableNameCase": 4,
@@ -1045,6 +1045,14 @@
       1745116021420,
       -1,
       {}
+    ],
+    "settings.databaseName": [
+      "settings",
+      -1,
+      -1,
+      {
+        "databaseName": 1745116759451
+      }
     ]
   }
 }
