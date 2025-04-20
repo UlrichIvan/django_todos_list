@@ -1,0 +1,66 @@
+{% extends "../base.html" %}
+
+{% load static %}
+
+{% block css %}
+	<style>
+		input {
+			text-transform: uppercase;
+		}
+		.container-wrapper {
+			box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.24);
+			border-radius: 20px;
+		}
+		body {
+			overflow: hidden;
+		}
+		.errorlist > li {
+			list-style-type: none;
+			color: red;
+		}
+		.errorlist {
+			padding-left: 0;
+		}
+	</style>
+{% endblock %}
+
+
+{% block body %}
+	<div class="container-fluid text-black text-capitalize px-0">
+		<div class="form-wrapper vh-100 vw-100 overflow-auto d-flex align-items-center justify-content-center">
+			<div class="container-wrapper mx-4 py-3 w-100">
+
+				<div class="container">
+					<div class="row align-items-center">
+						<div class="col-md-5 d-none d-md-block">
+							<div class="todo-image">
+								<img src="{% static 'todos/images/todo_active_account.png'%}" class="w-100" alt="user_register_logo">
+							</div>
+						</div>
+						<div class="col-12 col-md-7">
+							<form action="{% url 'todo_list:todo_user_active_account' %}" method="post" class="user_form w-100 text-capitalize p-3">
+								{% if errors.user_message %}
+									<div class="alert alert-danger">
+										{{errors.user_message}}
+									</div>
+								{% endif %}
+
+								<h2 class="text-center">active your account</h2>
+								<div class="form-group mb-3">
+									<label for="code">enter your code</label>
+									<input type="text" name="code" value="{{user.code.value}}" id="code" class="form-control" autocomplete="off" placeholder="xxxxx.."/>
+								</div>
+
+								<input class="btn btn-primary w-100" type="submit" value="active your account">
+								<a class="mt-2 text-start w-100 d-block" href="{% url 'todo_list:todo_user_new_code' %}">
+									You d'ont received a code or code expired ? get new code
+								</a>
+								{% csrf_token %}
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,5 +1,14 @@
 from django.urls import path
-from .views import TodosListView, AddTodo, EditTodo, TodoDetails, TodoDelete, UserCreate
+from .views import (
+    TodosListView,
+    AddTodo,
+    EditTodo,
+    TodoDetails,
+    TodoDelete,
+    UserCreate,
+    UserActiveAccount,
+    UserNewCode,
+)
 
 app_name = "todo_list"
 urlpatterns = [
@@ -9,4 +18,8 @@ urlpatterns = [
     path("details/<uuid:pk>", TodoDetails.as_view(), name="details_todo"),
     path("delete/<uuid:id>", TodoDelete.as_view(), name="delete_todo"),
     path("account", UserCreate.as_view(), name="todo_user_account"),
+    path(
+        "active/account", UserActiveAccount.as_view(), name="todo_user_active_account"
+    ),
+    path("new/code", UserNewCode.as_view(), name="todo_user_new_code"),
 ]

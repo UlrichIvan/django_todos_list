@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.views.generic.detail import DetailView
@@ -9,13 +10,14 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.core.mail.backends.smtp import EmailBackend
 from .models import Account, Todo, UserTodo
-from .forms import TodoForm, EditTodoForm, UserForm
+from .forms import TodoForm, EditTodoForm, UserActivationForm, UserForm
 import os
 import random
 import uuid
 import bcrypt
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
+from datetime import timedelta
 
 
 class TodosListView(ListView):
@@ -155,22 +157,16 @@ class UserCreate(View):
                 # send email
 
                 send_mail(
-                    subject="code actiovation",
+                    subject="actiovation code account",
                     message="code activation account",
                     from_email=os.getenv("SMTP_USER"),
                     recipient_list=[user.email],
                     html_message=f"use this code : <b>{account.code}</b> to actived your account.<br>This code will be expire in 1 hour",
                 )
 
-                return render(
-                    request,
-                    self.template_name,
-                    {
-                        "errors": {"user_message": "user created successfully"},
-                    },
+                return HttpResponseRedirect(
+                    redirect_to=reverse("todo_list:todo_user_active_account")
                 )
-
-                # return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
             else:
                 return render(
                     request,
@@ -178,7 +174,7 @@ class UserCreate(View):
                     {"errors": user_form.errors, "user": user_form},
                 )
         except Exception as _:
-            raise _
+
             return render(
                 request,
                 self.template_name,
@@ -190,3 +186,73 @@ class UserCreate(View):
                     "user": user_form,
                 },
             )
+
+
+class UserActiveAccount(View):
+    template_name = "todos/user_active_account.html"
+    context_object_name = "user"
+    model = Account
+
+    def get(self, request) -> HttpResponse:
+        return render(request, self.template_name)
+
+    def post(self, request) -> HttpResponse | None:
+
+        user_activation_form = UserActivationForm(request.POST)
+
+        if user_activation_form.is_valid():
+
+            data = user_activation_form.cleaned_data
+
+            try:
+                account = self.model.objects.get(code=data.get("code"))
+
+                if account.actived:
+                    return render(
+                        request,
+                        self.template_name,
+                        {"errors": {"user_message": "your account already actived."}},
+                    )
+                else:
+                    # hours count in the pass since the creation account for currentime
+                    td = timezone.now() - account.created_at
+                    hours, _ = divmod(td.seconds, 3600)
+
+                    if hours >= 1:
+                        return render(
+                            request,
+                            self.template_name,
+                            {"errors": {"user_message": "your code had been expired."}},
+                        )
+                    account.actived = True
+                    account.save()
+                    return render(
+                        request,
+                        self.template_name,
+                        {
+                            "errors": {
+                                "user_message": "your account has been actived successfully."
+                            }
+                        },
+                    )
+            except self.model.DoesNotExist:
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "unable to activate your account"}},
+                )
+
+        else:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "invalid code activation or expired"}},
+            )
+
+
+class UserNewCode(View):
+    template_name = "todos/user_new_code.html"
+    context_object_name = "user"
+
+    def get(self, request) -> HttpResponse:
+        return render(request, self.template_name)

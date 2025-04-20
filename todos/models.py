@@ -5,7 +5,8 @@ import uuid
 
 class Account(models.Model):
     id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
-    code = models.CharField(max_length=10, null=True, default=None, unique=True)
+    code = models.CharField(max_length=10, null=False, default=None, unique=True)
+    actived = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(default=None, null=True)
