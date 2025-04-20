@@ -1,12 +1,11 @@
 from django.utils import timezone
 from django.db import models
 import uuid
-import random
 
 
 class Account(models.Model):
     id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
-    code = models.CharField(max_length=10, null=True, default=None, unique=False)
+    code = models.CharField(max_length=10, null=True, default=None, unique=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(default=None, null=True)

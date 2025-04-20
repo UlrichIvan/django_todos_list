@@ -25,6 +25,14 @@ DEBUG = True if ENVIRONMENT == "local" else False
 
 ALLOWED_HOSTS = [] if DEBUG else [os.getenv("HOST")]
 
+# SMTP SETTINGS
+EMAIL_HOST = os.getenv("SMTP_HOST")
+EMAIL_HOST_USER = os.getenv("SMTP_USER")
+EMAIL_HOST_PASSWORD = os.getenv("SMTP_PASSWORD")
+EMAIL_PORT = os.getenv("SMTP_PORT")
+EMAIL_USE_TLS = bool(os.getenv("SMTP_USE_TLS"))
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
 # Application definition
 
 INSTALLED_APPS = [

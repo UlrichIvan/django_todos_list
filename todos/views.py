@@ -6,6 +6,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.core.mail.backends.smtp import EmailBackend
 from .models import Account, Todo, UserTodo
 from .forms import TodoForm, EditTodoForm, UserForm
 import os
@@ -126,7 +128,7 @@ class UserCreate(View):
 
                 # create account first
                 account = Account()
-                account.code = str(uuid.uuid4())[0 : random.randint(7, 10)].upper()
+                account.code = str(uuid.uuid4())[0 : random.randint(8, 10)].upper()
                 account.save()
 
                 # create user after
@@ -150,6 +152,16 @@ class UserCreate(View):
 
                 user.save()
 
+                # send email
+
+                send_mail(
+                    subject="code actiovation",
+                    message="code activation account",
+                    from_email=os.getenv("SMTP_USER"),
+                    recipient_list=[user.email],
+                    html_message=f"use this code : <b>{account.code}</b> to actived your account.<br>This code will be expire in 1 hour",
+                )
+
                 return render(
                     request,
                     self.template_name,
@@ -166,6 +178,7 @@ class UserCreate(View):
                     {"errors": user_form.errors, "user": user_form},
                 )
         except Exception as _:
+            raise _
             return render(
                 request,
                 self.template_name,
