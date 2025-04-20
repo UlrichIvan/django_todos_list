@@ -2,12 +2,18 @@ from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
-from .models import Todo
-from .forms import TodoForm, EditTodoForm
+from .models import Account, Todo, UserTodo
+from .forms import TodoForm, EditTodoForm, UserForm
+import os
+import random
+import uuid
+import bcrypt
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
 
 class TodosListView(ListView):
@@ -100,3 +106,74 @@ class TodoDelete(View):
         todo.deleted_at = timezone.now()
         todo.save()
         return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
+
+
+class UserCreate(View):
+    template_name = "todos/user_account.html"
+    context_object_name = "user"
+
+    def get(self, request) -> HttpResponse:
+        return render(request, self.template_name)
+
+    def post(self, request) -> HttpResponse | None:
+
+        user_form = UserForm(request.POST)
+
+        try:
+            if user_form.is_valid():
+
+                data = user_form.cleaned_data
+
+                # create account first
+                account = Account()
+                account.code = str(uuid.uuid4())[0 : random.randint(7, 10)].upper()
+                account.save()
+
+                # create user after
+                user = UserTodo(**data)  # spread operator for dict object
+
+                # password hash
+                password_hashed = bcrypt.hashpw(
+                    bytes(data["password"], encoding="UTF-8"), bcrypt.gensalt(15)
+                )
+
+                ob = AES.new(os.getenv("KEY_ENCRPYT").encode("UTF-8"), AES.MODE_CBC)
+
+                password_hashed_encrypt = ob.encrypt(
+                    pad(password_hashed, AES.block_size)
+                )
+
+                # encrypt password with cipher object
+                user.password = password_hashed_encrypt
+
+                user.account_id = account
+
+                user.save()
+
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "errors": {"user_message": "user created successfully"},
+                    },
+                )
+
+                # return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
+            else:
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": user_form.errors, "user": user_form},
+                )
+        except Exception as _:
+            return render(
+                request,
+                self.template_name,
+                {
+                    "errors": {
+                        **user_form.errors,
+                        "user_message": "an error occured please try again",
+                    },
+                    "user": user_form,
+                },
+            )

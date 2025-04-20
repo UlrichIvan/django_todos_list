@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.db import models
 import uuid
+import random
 
 
 class Account(models.Model):
@@ -15,10 +16,25 @@ class UserTodo(models.Model):
     id = models.UUIDField(
         editable=False, default=uuid.uuid4, unique=True, primary_key=True
     )
-    first_name = models.CharField(max_length=255, null=False)
-    last_name = models.CharField(max_length=255, null=False)
-    email = models.EmailField(max_length=255, null=False, unique=True)
-    password = models.CharField(null=False, default=None)
+    first_name = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False,
+        error_messages={"max_length": "invalid length first name"},
+    )
+    last_name = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False,
+        error_messages={"max_length": "invalid length last name"},
+    )
+    email = models.EmailField(
+        max_length=255,
+        null=False,
+        unique=True,
+        error_messages={"unique": "email already taken"},
+    )
+    password = models.CharField(null=False, blank=False)
     account_id = models.OneToOneField(to=Account, null=True, on_delete=models.SET_NULL)
 
 
