@@ -106,6 +106,9 @@
 								</div>
 
 								<input class="btn btn-primary w-100" type="submit" value="create account">
+								<a class="mt-2 text-start w-100 d-block" href="{% url 'todo_list:todo_user_login' %}">
+									You already have account ? log in to your account
+								</a>
 								{% csrf_token %}
 							</form>
 						</div>

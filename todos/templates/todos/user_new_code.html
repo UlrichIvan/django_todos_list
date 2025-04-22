@@ -5,7 +5,7 @@
 {% block css %}
 	<style>
 		input {
-			text-transform: uppercase;
+			text-transform: capitalize;
 		}
 		.container-wrapper {
 			box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.24);
@@ -34,26 +34,26 @@
 					<div class="row align-items-center">
 						<div class="col-md-5 d-none d-md-block">
 							<div class="todo-image">
-								<img src="{% static 'todos/images/todo_active_account.png'%}" class="w-100" alt="user_register_logo">
+								<img src="{% static 'todos/images/secure.png'%}" class="w-100" alt="user_register_secure">
 							</div>
 						</div>
 						<div class="col-12 col-md-7">
-							<form action="{% url 'todo_list:todo_user_active_account' %}" method="post" class="user_form w-100 text-capitalize p-3">
+							<form action="{% url 'todo_list:todo_user_new_code' %}" method="post" class="user_form w-100 text-capitalize p-3">
+
+								<h2 class="text-center">new code validation</h2>
 								{% if errors.user_message %}
 									<div class="alert alert-danger">
 										{{errors.user_message}}
 									</div>
 								{% endif %}
-
-								<h2 class="text-center">active your account</h2>
 								<div class="form-group mb-3">
-									<label for="first_name">enter your code</label>
-									<input type="text" name="first_name" value="{{user.code.value}}" id="code" class="form-control" autocomplete="off" placeholder="xxxxx.."/>
+									<label for="email">enter your email</label>
+									<input type="email" name="email" value="{{user.email.value}}" id="email" class="form-control" autocomplete="off" placeholder="your email account"/>
 								</div>
 
-								<input class="btn btn-primary w-100" type="submit" value="active your account">
-								<a class="mt-2 text-center" href="{% url 'todo_list:user_new_code' %}">
-									You d'ont received a code or code expired ? get new code
+								<input class="btn btn-primary w-100" type="submit" value="get new code">
+								<a class="mt-2 text-start w-100 d-block" href="{% url 'todo_list:todo_user_active_account' %}">
+									You received a code ? active your account
 								</a>
 								{% csrf_token %}
 							</form>
@@ -64,4 +64,3 @@
 		</div>
 	</div>
 {% endblock %}
-

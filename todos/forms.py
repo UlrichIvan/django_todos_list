@@ -1,8 +1,6 @@
 import re
 from django.forms import ModelForm
 from .models import Account, Todo, UserTodo
-from django.db import models
-from django.core.validators import RegexValidator
 
 
 class TodoForm(ModelForm):
@@ -58,22 +56,42 @@ class UserActivationForm(ModelForm):
             setattr(self, "cleaned_data", dict(code=self.data["code"]))
             return True
 
-    # def is_valid(self):
-    #     rgx_password = r"^[a-zA-Z0-9]{12}$"
-    #     if re.match(rgx_password, self.data["password"]) == None:
-    #         print(
-    #             {
-    #                 "password": self.data["password"],
-    #                 "match": re.match(rgx_password, self.data["password"]),
-    #             }
-    #         )
-    #         self.add_error(
-    #             "password", "password must be content 12 alphanumics characters"
-    #         )
-    #         super().is_valid()
-    #         return False
-    #     if self.data["password"] != self.data["confirm_password"]:
-    #         self.add_error("password", "password and confirm password must be the same")
-    #         super().is_valid()
-    #         return False
-    #     return super().is_valid()
+
+class UserNewCodeForm(ModelForm):
+
+    class Meta:
+        model = UserTodo
+        fields = ["email"]
+
+    rgx_email = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+
+    def is_valid(self):
+        if re.match(self.rgx_email, self.data["email"]) == None:
+            return False
+        else:
+            setattr(self, "cleaned_data", dict(email=self.data["email"]))
+            return True
+
+
+class UserLoginForm(ModelForm):
+
+    class Meta:
+        model = UserTodo
+        fields = ["email", "password"]
+
+    rgx_email = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+
+    rgx_password = r"^[a-zA-Z0-9]{12}$"
+
+    def is_valid(self):
+        if re.match(self.rgx_email, self.data["email"]) == None:
+            return False
+        elif re.match(self.rgx_password, self.data["password"]) == None:
+            return False
+        else:
+            setattr(
+                self,
+                "cleaned_data",
+                dict(email=self.data["email"], password=self.data["password"]),
+            )
+            return True

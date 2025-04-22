@@ -34,7 +34,7 @@ class UserTodo(models.Model):
         unique=True,
         error_messages={"unique": "email already taken"},
     )
-    password = models.CharField(null=False, blank=False)
+    password = models.CharField(null=False, blank=False, max_length=128)
     account_id = models.OneToOneField(to=Account, null=True, on_delete=models.SET_NULL)
 
 

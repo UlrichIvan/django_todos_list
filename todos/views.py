@@ -9,15 +9,23 @@ from django.urls import reverse
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.core.mail.backends.smtp import EmailBackend
+
+from todos.utils import get_code
 from .models import Account, Todo, UserTodo
-from .forms import TodoForm, EditTodoForm, UserActivationForm, UserForm
+from .forms import (
+    TodoForm,
+    EditTodoForm,
+    UserActivationForm,
+    UserForm,
+    UserLoginForm,
+    UserNewCodeForm,
+)
 import os
 import random
 import uuid
 import bcrypt
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
-from datetime import timedelta
+from Crypto.Util.Padding import pad, unpad
 
 
 class TodosListView(ListView):
@@ -130,38 +138,30 @@ class UserCreate(View):
 
                 # create account first
                 account = Account()
-                account.code = str(uuid.uuid4())[0 : random.randint(8, 10)].upper()
+                account.code = get_code()
                 account.save()
 
                 # create user after
-                user = UserTodo(**data)  # spread operator for dict object
-
-                # password hash
-                password_hashed = bcrypt.hashpw(
-                    bytes(data["password"], encoding="UTF-8"), bcrypt.gensalt(15)
-                )
-
-                ob = AES.new(os.getenv("KEY_ENCRPYT").encode("UTF-8"), AES.MODE_CBC)
-
-                password_hashed_encrypt = ob.encrypt(
-                    pad(password_hashed, AES.block_size)
-                )
+                user = UserTodo(**data)
 
                 # encrypt password with cipher object
-                user.password = password_hashed_encrypt
+                password_hashed = bcrypt.hashpw(
+                    data.get("password").encode(), bcrypt.gensalt(15)
+                )
+
+                user.password = password_hashed.decode()
 
                 user.account_id = account
 
                 user.save()
 
                 # send email
-
                 send_mail(
-                    subject="actiovation code account",
+                    subject="activation code account",
                     message="code activation account",
                     from_email=os.getenv("SMTP_USER"),
                     recipient_list=[user.email],
-                    html_message=f"use this code : <b>{account.code}</b> to actived your account.<br>This code will be expire in 1 hour",
+                    html_message=f"use this code : <b>{account.code}</b> to active your account.<br>This code will be expire in 1 hour",
                 )
 
                 return HttpResponseRedirect(
@@ -174,7 +174,6 @@ class UserCreate(View):
                     {"errors": user_form.errors, "user": user_form},
                 )
         except Exception as _:
-
             return render(
                 request,
                 self.template_name,
@@ -215,7 +214,7 @@ class UserActiveAccount(View):
                     )
                 else:
                     # hours count in the pass since the creation account for currentime
-                    td = timezone.now() - account.created_at
+                    td = timezone.now() - account.updated_at
                     hours, _ = divmod(td.seconds, 3600)
 
                     if hours >= 1:
@@ -226,27 +225,21 @@ class UserActiveAccount(View):
                         )
                     account.actived = True
                     account.save()
-                    return render(
-                        request,
-                        self.template_name,
-                        {
-                            "errors": {
-                                "user_message": "your account has been actived successfully."
-                            }
-                        },
+                    return HttpResponseRedirect(
+                        redirect_to=reverse("todo_list:todo_user_login")
                     )
             except self.model.DoesNotExist:
                 return render(
                     request,
                     self.template_name,
-                    {"errors": {"user_message": "unable to activate your account"}},
+                    {"errors": {"user_message": "unable to active your account"}},
                 )
 
         else:
             return render(
                 request,
                 self.template_name,
-                {"errors": {"user_message": "invalid code activation or expired"}},
+                {"errors": {"user_message": "invalid code activation"}},
             )
 
 
@@ -256,3 +249,93 @@ class UserNewCode(View):
 
     def get(self, request) -> HttpResponse:
         return render(request, self.template_name)
+
+    def post(self, request) -> HttpResponse | None:
+        user_code = UserNewCodeForm(request.POST)
+
+        try:
+            if user_code.is_valid():
+                data = user_code.cleaned_data
+                user = UserTodo.objects.get(email=data.get("email"))
+
+                if user.account_id.actived == False:
+
+                    account = user.account_id
+                    account.code = str(uuid.uuid4())[0 : random.randint(8, 10)].upper()
+                    account.updated_at = timezone.now()
+                    account.save()
+
+                    #  send new code by email
+                    send_mail(
+                        subject="activation code account",
+                        message="code activation account",
+                        from_email=os.getenv("SMTP_USER"),
+                        recipient_list=[user.email],
+                        html_message=f"use this code : <b>{account.code}</b> to actived your account.<br>This code will be expire in 1 hour",
+                    )
+
+                    return HttpResponseRedirect(
+                        redirect_to=reverse("todo_list:todo_user_active_account")
+                    )
+
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "unable to activate your account"}},
+                )
+            else:
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "invalid email address"}},
+                )
+        except Exception as _:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "an error occured please try again!"}},
+            )
+
+
+class UserLogin(View):
+    template_name = "todos/user_login.html"
+    context_object_name = "user"
+    model = UserTodo
+
+    def get(self, request) -> HttpResponse:
+        return render(request, self.template_name)
+
+    def post(self, request) -> HttpResponse | None:
+        login_form = UserLoginForm(request.POST)
+
+        try:
+            if login_form.is_valid():
+                data = login_form.cleaned_data
+                user = UserTodo.objects.get(email=data.get("email"))
+
+                if user.account_id.actived == True and bcrypt.checkpw(
+                    data.get("password").encode(),
+                    user.password.encode(),
+                ):
+                    return render(
+                        request,
+                        self.template_name,
+                        {"errors": {"user_message": "user valided successfully!"}},
+                    )
+                else:
+                    return render(
+                        request,
+                        self.template_name,
+                    )
+            else:
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "invalid email or password address"}},
+                )
+        except Exception as _:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "an error occured please try again!"}},
+            )
