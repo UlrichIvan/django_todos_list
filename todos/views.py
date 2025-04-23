@@ -8,8 +8,7 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
 from django.core.mail import send_mail
-from django.core.mail.backends.smtp import EmailBackend
-
+from django.contrib import messages
 from todos.utils import get_code
 from .models import Account, Todo, UserTodo
 from .forms import (
@@ -161,7 +160,11 @@ class UserCreate(View):
                     message="code activation account",
                     from_email=os.getenv("SMTP_USER"),
                     recipient_list=[user.email],
-                    html_message=f"use this code : <b>{account.code}</b> to active your account.<br>This code will be expire in 1 hour",
+                    html_message=f"use this code : <b>{account.code}</b> to active your account.<br>This code will be expire in 1 hour.",
+                )
+
+                messages.success(
+                    request, message="your account has been create successfully"
                 )
 
                 return HttpResponseRedirect(
@@ -221,10 +224,32 @@ class UserActiveAccount(View):
                         return render(
                             request,
                             self.template_name,
-                            {"errors": {"user_message": "your code had been expired."}},
+                            {
+                                "errors": {
+                                    "user_message": "your code have been expired."
+                                }
+                            },
                         )
+
+                    user = UserTodo.objects.get(account_id=account.id)
+
                     account.actived = True
+
                     account.save()
+
+                    # send email
+                    send_mail(
+                        subject="activation account done successfully",
+                        message=f"Congratulation,{user.last_name} your account has been actived successfully",
+                        from_email=os.getenv("SMTP_USER"),
+                        recipient_list=[user.email],
+                        html_message=f"Dear <b>{user.last_name}</b>, your account has been actived successfully",
+                    )
+
+                    messages.success(
+                        request, message="your account has been actived successfully"
+                    )
+
                     return HttpResponseRedirect(
                         redirect_to=reverse("todo_list:todo_user_login")
                     )
@@ -261,7 +286,7 @@ class UserNewCode(View):
                 if user.account_id.actived == False:
 
                     account = user.account_id
-                    account.code = str(uuid.uuid4())[0 : random.randint(8, 10)].upper()
+                    account.code = get_code()
                     account.updated_at = timezone.now()
                     account.save()
 
@@ -272,6 +297,11 @@ class UserNewCode(View):
                         from_email=os.getenv("SMTP_USER"),
                         recipient_list=[user.email],
                         html_message=f"use this code : <b>{account.code}</b> to actived your account.<br>This code will be expire in 1 hour",
+                    )
+
+                    messages.info(
+                        request,
+                        message="new code activation has been send to your email account successfully",
                     )
 
                     return HttpResponseRedirect(
@@ -317,6 +347,16 @@ class UserLogin(View):
                     data.get("password").encode(),
                     user.password.encode(),
                 ):
+
+                    # send email
+                    send_mail(
+                        subject="new connection on your account",
+                        message=f"new connection on your account",
+                        from_email=os.getenv("SMTP_USER"),
+                        recipient_list=[user.email],
+                        html_message=f"Dear <b>{user.last_name}</b>, someeone is connected on your account",
+                    )
+
                     return render(
                         request,
                         self.template_name,

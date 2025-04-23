@@ -43,6 +43,14 @@
 									<div class="alert alert-danger">
 										{{errors.user_message}}
 									</div>
+								{% elif messages %}
+									{% for message in messages %}
+										{% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+											<div class="alert alert-success">
+												{{message}}
+											</div>
+										{% endif %}
+									{% endfor %}
 								{% endif %}
 								<div class="form-group mb-3">
 									<label for="email">enter your email</label>

@@ -24,12 +24,6 @@ class UserForm(ModelForm):
     def is_valid(self):
         rgx_password = r"^[a-zA-Z0-9]{12}$"
         if re.match(rgx_password, self.data["password"]) == None:
-            print(
-                {
-                    "password": self.data["password"],
-                    "match": re.match(rgx_password, self.data["password"]),
-                }
-            )
             self.add_error(
                 "password", "password must be content 12 alphanumics characters"
             )
@@ -49,7 +43,7 @@ class UserActivationForm(ModelForm):
         fields = ["code"]
 
     def is_valid(self):
-        rgx_code = r"^[a-zA-Z0-9-]{7,10}$"
+        rgx_code = r"^[a-zA-Z0-9]{7,10}$"
         if re.match(rgx_code, self.data["code"]) == None:
             return False
         else:
