@@ -1,6 +1,7 @@
 import re
 from django.forms import ModelForm
-from .models import Account, Todo, UserTodo
+
+from .models import Todo, UserTodo,FactorAuth
 
 
 class TodoForm(ModelForm):
@@ -19,11 +20,12 @@ class UserForm(ModelForm):
 
     class Meta:
         model = UserTodo
-        exclude = ["id", "account_id"]
+        fields = ["first_name", "last_name", "email", "password"]
+
+    rgx_password = r"^[a-zA-Z0-9]{12}$"
 
     def is_valid(self):
-        rgx_password = r"^[a-zA-Z0-9]{12}$"
-        if re.match(rgx_password, self.data["password"]) == None:
+        if re.match(self.rgx_password, self.data["password"]) == None:
             self.add_error(
                 "password", "password must be content 12 alphanumics characters"
             )
@@ -39,12 +41,31 @@ class UserForm(ModelForm):
 class UserActivationForm(ModelForm):
 
     class Meta:
-        model = Account
+        model = UserTodo
         fields = ["code"]
 
+    rgx_code = r"^[a-zA-Z0-9]{7,10}$"
+
     def is_valid(self):
-        rgx_code = r"^[a-zA-Z0-9]{7,10}$"
-        if re.match(rgx_code, self.data["code"]) == None:
+
+        if re.match(self.rgx_code, self.data["code"]) == None:
+            return False
+        else:
+            setattr(self, "cleaned_data", dict(code=self.data["code"]))
+            return True
+
+
+class UserFactAuthForm(ModelForm):
+
+    class Meta:
+        model = FactorAuth
+        fields = ["code"]
+
+    rgx_code = r"^[a-zA-Z0-9]{7,10}$"
+
+    def is_valid(self):
+
+        if re.match(self.rgx_code, self.data["code"]) == None:
             return False
         else:
             setattr(self, "cleaned_data", dict(code=self.data["code"]))

@@ -9,6 +9,8 @@ from .views import (
     UserActiveAccount,
     UserNewCode,
     UserLogin,
+    UserFactAuth,
+    UserNewCodeFactor,
 )
 
 app_name = "todo_list"
@@ -24,4 +26,10 @@ urlpatterns = [
     ),
     path("new/code", UserNewCode.as_view(), name="todo_user_new_code"),
     path("login", UserLogin.as_view(), name="todo_user_login"),
+    path("fact/auth", UserFactAuth.as_view(), name="todo_user_fact_auth"),
+    path(
+        "code/fact/auth",
+        UserNewCodeFactor.as_view(),
+        name="todo_user_new_code_fact_auth",
+    ),
 ]

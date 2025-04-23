@@ -10,21 +10,18 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib import messages
 from todos.utils import get_code
-from .models import Account, Todo, UserTodo
+from .models import FactorAuth, Todo, UserTodo
 from .forms import (
     TodoForm,
     EditTodoForm,
     UserActivationForm,
+    UserFactAuthForm,
     UserForm,
     UserLoginForm,
     UserNewCodeForm,
 )
 import os
-import random
-import uuid
 import bcrypt
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
 
 
 class TodosListView(ListView):
@@ -135,24 +132,23 @@ class UserCreate(View):
 
                 data = user_form.cleaned_data
 
-                # create account first
-                account = Account()
-                account.code = get_code()
-                account.save()
-
                 # create user after
                 user = UserTodo(**data)
+                f_auth = FactorAuth()
+                f_auth.user = user
 
-                # encrypt password with cipher object
+                # set code activation
+                user.code = get_code()
+
+                # hash password with bcrypt
                 password_hashed = bcrypt.hashpw(
-                    data.get("password").encode(), bcrypt.gensalt(15)
+                    data.get("password").encode(), bcrypt.gensalt()
                 )
 
                 user.password = password_hashed.decode()
 
-                user.account_id = account
-
                 user.save()
+                f_auth.save()
 
                 # send email
                 send_mail(
@@ -160,11 +156,12 @@ class UserCreate(View):
                     message="code activation account",
                     from_email=os.getenv("SMTP_USER"),
                     recipient_list=[user.email],
-                    html_message=f"use this code : <b>{account.code}</b> to active your account.<br>This code will be expire in 1 hour.",
+                    html_message=f"use this code : <b>{user.code}</b> to active your account.<br>",
                 )
 
                 messages.success(
-                    request, message="your account has been create successfully"
+                    request,
+                    message="your account has been create successfully. Use theeee code in your emmail account to active your account",
                 )
 
                 return HttpResponseRedirect(
@@ -193,7 +190,7 @@ class UserCreate(View):
 class UserActiveAccount(View):
     template_name = "todos/user_active_account.html"
     context_object_name = "user"
-    model = Account
+    model = UserTodo
 
     def get(self, request) -> HttpResponse:
         return render(request, self.template_name)
@@ -207,9 +204,9 @@ class UserActiveAccount(View):
             data = user_activation_form.cleaned_data
 
             try:
-                account = self.model.objects.get(code=data.get("code"))
+                user = self.model.objects.get(code=data.get("code"))
 
-                if account.actived:
+                if user.actived:
                     return render(
                         request,
                         self.template_name,
@@ -217,7 +214,7 @@ class UserActiveAccount(View):
                     )
                 else:
                     # hours count in the pass since the creation account for currentime
-                    td = timezone.now() - account.updated_at
+                    td = timezone.now() - user.updated_at
                     hours, _ = divmod(td.seconds, 3600)
 
                     if hours >= 1:
@@ -231,11 +228,9 @@ class UserActiveAccount(View):
                             },
                         )
 
-                    user = UserTodo.objects.get(account_id=account.id)
+                    user.actived = True
 
-                    account.actived = True
-
-                    account.save()
+                    user.save()
 
                     # send email
                     send_mail(
@@ -283,12 +278,11 @@ class UserNewCode(View):
                 data = user_code.cleaned_data
                 user = UserTodo.objects.get(email=data.get("email"))
 
-                if user.account_id.actived == False:
+                if user.actived == False:
 
-                    account = user.account_id
-                    account.code = get_code()
-                    account.updated_at = timezone.now()
-                    account.save()
+                    user.code = get_code()
+                    user.updated_at = timezone.now()
+                    user.save()
 
                     #  send new code by email
                     send_mail(
@@ -296,7 +290,7 @@ class UserNewCode(View):
                         message="code activation account",
                         from_email=os.getenv("SMTP_USER"),
                         recipient_list=[user.email],
-                        html_message=f"use this code : <b>{account.code}</b> to actived your account.<br>This code will be expire in 1 hour",
+                        html_message=f"use this code : <b>{user.code}</b> to actived your account.<br>This code will be expire in 1 hour",
                     )
 
                     messages.info(
@@ -317,8 +311,14 @@ class UserNewCode(View):
                 return render(
                     request,
                     self.template_name,
-                    {"errors": {"user_message": "invalid email address"}},
+                    {"errors": {"user_message": "invalid email address or password"}},
                 )
+        except UserTodo.DoesNotExist as _:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "invalid email address or password"}},
+            )
         except Exception as _:
             return render(
                 request,
@@ -343,25 +343,33 @@ class UserLogin(View):
                 data = login_form.cleaned_data
                 user = UserTodo.objects.get(email=data.get("email"))
 
-                if user.account_id.actived == True and bcrypt.checkpw(
+                if user.actived == True and bcrypt.checkpw(
                     data.get("password").encode(),
                     user.password.encode(),
                 ):
 
+                    f_auth = FactorAuth.objects.get(user=user)
+                    f_auth.code = get_code()
+                    f_auth.save()
+
                     # send email
                     send_mail(
-                        subject="new connection on your account",
-                        message=f"new connection on your account",
+                        subject="check your authentication",
+                        message=f"new authentication on your account",
                         from_email=os.getenv("SMTP_USER"),
                         recipient_list=[user.email],
-                        html_message=f"Dear <b>{user.last_name}</b>, someeone is connected on your account",
+                        html_message=f"Use this code <b>{f_auth.code}</b>, to valid your authentication.",
                     )
 
-                    return render(
+                    messages.info(
                         request,
-                        self.template_name,
-                        {"errors": {"user_message": "user valided successfully!"}},
+                        message="use the code in your email account to verify your authentication",
                     )
+
+                    return HttpResponseRedirect(
+                        redirect_to=reverse("todo_list:todo_user_fact_auth")
+                    )
+
                 else:
                     return render(
                         request,
@@ -371,9 +379,141 @@ class UserLogin(View):
                 return render(
                     request,
                     self.template_name,
-                    {"errors": {"user_message": "invalid email or password address"}},
+                    {"errors": {"user_message": "invalid email or passwor"}},
                 )
         except Exception as _:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "an error occured please try again!"}},
+            )
+
+
+class UserFactAuth(View):
+    template_name = "todos/user_fact_auth.html"
+    context_object_name = "user"
+    model = FactorAuth
+
+    def get(self, request) -> HttpResponse:
+        return render(request, self.template_name)
+
+    def post(self, request) -> HttpResponse | None:
+
+        user_fact_auth_form = UserFactAuthForm(request.POST)
+
+        if user_fact_auth_form.is_valid():
+
+            data = user_fact_auth_form.cleaned_data
+
+            try:
+                user_fact_auth = self.model.objects.get(code=data.get("code"))
+
+                if user_fact_auth.user.actived == False:
+                    return render(
+                        request,
+                        self.template_name,
+                        {"errors": {"user_message": "your code is mistake"}},
+                    )
+                else:
+                    # hours count in the pass since the creation account for currentime
+                    td = timezone.now() - user_fact_auth.updated_at
+
+                    seconds, _ = divmod(td.seconds, 60)
+
+                    if seconds >= 60:
+                        return render(
+                            request,
+                            self.template_name,
+                            {
+                                "errors": {
+                                    "user_message": "your code have been expired."
+                                }
+                            },
+                        )
+                    user_fact_auth.is_auth = True
+                    user_fact_auth.save()
+
+                    # send email
+                    send_mail(
+                        subject="new connection on your account",
+                        message=f"new connection",
+                        from_email=os.getenv("SMTP_USER"),
+                        recipient_list=[user_fact_auth.user.email],
+                        html_message=f"Dear <b>{user_fact_auth.user.last_name}</b>, your have a new connection on your Account",
+                    )
+
+                    return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
+            except self.model.DoesNotExist:
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "invalid code authentication"}},
+                )
+
+        else:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "invalid code activation"}},
+            )
+
+
+class UserNewCodeFactor(View):
+    template_name = "todos/user_new_code_factor.html"
+    context_object_name = "user"
+
+    def get(self, request) -> HttpResponse:
+        return render(request, self.template_name)
+
+    def post(self, request) -> HttpResponse | None:
+        user_code = UserNewCodeForm(request.POST)
+
+        try:
+            if user_code.is_valid():
+                data = user_code.cleaned_data
+                user = UserTodo.objects.get(email=data.get("email"))
+                user_factor = FactorAuth.objects.get(user=user)
+
+                if user.actived == True:
+                    user_factor.code = get_code()
+                    user_factor.updated_at = timezone.now()
+                    user_factor.save()
+
+                    #  send new code by email
+                    send_mail(
+                        subject="authentication code",
+                        message="code authentication",
+                        from_email=os.getenv("SMTP_USER"),
+                        recipient_list=[user.email],
+                        html_message=f"use this code : <b>{user_factor.code}</b> to valid your authentication",
+                    )
+
+                    messages.info(
+                        request,
+                        message="new code authentication has been send to your email account successfully",
+                    )
+
+                    return HttpResponseRedirect(
+                        redirect_to=reverse("todo_list:todo_user_fact_auth")
+                    )
+
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "errors": {
+                            "user_message": "unable to verify your authentication"
+                        }
+                    },
+                )
+            else:
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "invalid email address or password"}},
+                )
+        except Exception as _:
+            raise _
             return render(
                 request,
                 self.template_name,

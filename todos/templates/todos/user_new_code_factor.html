@@ -33,38 +33,26 @@
 					<div class="row align-items-center">
 						<div class="col-md-5 d-none d-md-block">
 							<div class="todo-image">
-								<img src="{% static 'todos/images/user_login.png'%}" class="w-100" alt="user_register_secure">
+								<img src="{% static 'todos/images/secure.png'%}" class="w-100" alt="user_register_secure">
 							</div>
 						</div>
 						<div class="col-12 col-md-7">
-							<form action="{% url 'todo_list:todo_user_login' %}" method="post" class="user_form w-100 text-capitalize p-3">
-								<h2 class="text-center">user login</h2>
+							<form action="{% url 'todo_list:todo_user_new_code_fact_auth' %}" method="post" class="user_form w-100 text-capitalize p-3">
+
+								<h2 class="text-center">new code authentication</h2>
 								{% if errors.user_message %}
 									<div class="alert alert-danger">
 										{{errors.user_message}}
 									</div>
-								{% elif messages %}
-									{% for message in messages %}
-										{% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
-											<div class="alert alert-success">
-												{{message}}
-											</div>
-										{% endif %}
-									{% endfor %}
 								{% endif %}
 								<div class="form-group mb-3">
 									<label for="email">enter your email</label>
-									<input type="email" name="email" value="{{user.email.value}}" id="email" class="form-control" placeholder="your email account" autofocus/>
+									<input type="email" name="email" value="{{user.email.value}}" id="email" class="form-control" placeholder="your email account" autofocus required/>
 								</div>
 
-								<div class="form-group mb-3">
-									<label for="password">enter your password</label>
-									<input type="password" name="password" value="{{user.password.value}}" id="password" class="form-control" autocomplete="off" placeholder="your password account"/>
-								</div>
-
-								<input class="btn btn-primary w-100" type="submit" value="login">
-								<a class="mt-2 text-start w-100 d-block" href="{% url 'todo_list:todo_user_account' %}">
-									You don't have account ? create it
+								<input class="btn btn-primary w-100" type="submit" value="get new code">
+								<a class="mt-2 text-start w-100 d-block" href="{% url 'todo_list:todo_user_fact_auth' %}">
+									do you received a code  ? verify your authentication
 								</a>
 								{% csrf_token %}
 							</form>

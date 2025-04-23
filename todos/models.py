@@ -14,9 +14,7 @@ class Account(models.Model):
 
 
 class UserTodo(models.Model):
-    id = models.UUIDField(
-        editable=False, default=uuid.uuid4, unique=True, primary_key=True
-    )
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True)
     first_name = models.CharField(
         max_length=255,
         null=False,
@@ -36,7 +34,11 @@ class UserTodo(models.Model):
         error_messages={"unique": "email already taken"},
     )
     password = models.CharField(null=False, blank=False, max_length=128)
-    account_id = models.OneToOneField(to=Account, null=True, on_delete=models.SET_NULL)
+    code = models.CharField(max_length=10, null=False, default=None, unique=True)
+    actived = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+    deleted_at = models.DateTimeField(default=None, null=True)
 
 
 class Todo(models.Model):
@@ -75,3 +77,11 @@ class Todo(models.Model):
                 fields.append((field.name, getattr(self, field.name)))
 
         return fields
+
+
+class FactorAuth(models.Model):
+    code = models.CharField(max_length=10, null=True, default=None, unique=True)
+    user = models.OneToOneField(to=UserTodo, on_delete=models.SET_NULL, null=True)
+    is_auth = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
