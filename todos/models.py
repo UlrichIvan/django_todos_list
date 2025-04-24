@@ -85,3 +85,10 @@ class FactorAuth(models.Model):
     is_auth = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+
+
+class ResetPassword(models.Model):
+    code = models.CharField(max_length=10, null=True, default=None, unique=True)
+    user = models.OneToOneField(to=UserTodo, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)

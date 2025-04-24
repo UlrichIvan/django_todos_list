@@ -1,7 +1,7 @@
 import re
 from django.forms import ModelForm
 
-from .models import Todo, UserTodo,FactorAuth
+from .models import Todo, UserTodo, FactorAuth
 
 
 class TodoForm(ModelForm):
@@ -36,6 +36,36 @@ class UserForm(ModelForm):
             super().is_valid()
             return False
         return super().is_valid()
+
+
+class UserNewPasswordForm(ModelForm):
+
+    class Meta:
+        model = UserTodo
+        fields = ["code", "password"]
+
+    rgx_password = r"^[a-zA-Z0-9]{12}$"
+    rgx_code = r"^[a-zA-Z0-9]{7,10}$"
+
+    def is_valid(self):
+        if re.match(self.rgx_password, self.data["password"]) == None:
+            self.add_error(
+                "password", "password must be content 12 alphanumics characters"
+            )
+            return False
+        if self.data["password"] != self.data["confirm_password"]:
+            self.add_error("password", "password and confirm password must be the same")
+            return False
+
+        if re.match(self.rgx_code, self.data["code"]) == None:
+            self.add_error("code", "code invalid or expired")
+            return False
+        setattr(
+            self,
+            "cleaned_data",
+            dict(code=self.data.get("code"), password=self.data.get("password")),
+        )
+        return True
 
 
 class UserActivationForm(ModelForm):

@@ -11,6 +11,8 @@ from .views import (
     UserLogin,
     UserFactAuth,
     UserNewCodeFactor,
+    ResetPasswordView,
+    NewPasswordView,
 )
 
 app_name = "todo_list"
@@ -32,4 +34,10 @@ urlpatterns = [
         UserNewCodeFactor.as_view(),
         name="todo_user_new_code_fact_auth",
     ),
+    path(
+        "reset/password",
+        ResetPasswordView.as_view(),
+        name="todo_user_reset_password",
+    ),
+    path("newpassword", NewPasswordView.as_view(), name="todo_user_new_password"),
 ]

@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib import messages
 from todos.utils import get_code
-from .models import FactorAuth, Todo, UserTodo
+from .models import FactorAuth, ResetPassword, Todo, UserTodo
 from .forms import (
     TodoForm,
     EditTodoForm,
@@ -19,6 +19,7 @@ from .forms import (
     UserForm,
     UserLoginForm,
     UserNewCodeForm,
+    UserNewPasswordForm,
 )
 import os
 import bcrypt
@@ -134,8 +135,12 @@ class UserCreate(View):
 
                 # create user after
                 user = UserTodo(**data)
+
+                # init 2f auht and reset password
                 f_auth = FactorAuth()
+                r_password = ResetPassword()
                 f_auth.user = user
+                r_password.user = user
 
                 # set code activation
                 user.code = get_code()
@@ -149,6 +154,7 @@ class UserCreate(View):
 
                 user.save()
                 f_auth.save()
+                r_password.save()
 
                 # send email
                 send_mail(
@@ -161,7 +167,7 @@ class UserCreate(View):
 
                 messages.success(
                     request,
-                    message="your account has been create successfully. Use theeee code in your emmail account to active your account",
+                    message="your account has been create successfully. Use this code in your email account to active your account",
                 )
 
                 return HttpResponseRedirect(
@@ -215,7 +221,7 @@ class UserActiveAccount(View):
                 else:
                     # hours count in the pass since the creation account for currentime
                     td = timezone.now() - user.updated_at
-                    hours, _ = divmod(td.seconds, 3600)
+                    hours, _ = divmod(td.total_seconds(), 3600)
 
                     if hours >= 1:
                         return render(
@@ -418,9 +424,11 @@ class UserFactAuth(View):
                     # hours count in the pass since the creation account for currentime
                     td = timezone.now() - user_fact_auth.updated_at
 
-                    seconds, _ = divmod(td.seconds, 60)
+                    minutes, _ = divmod(td.total_seconds(), 60)
 
-                    if seconds >= 60:
+                    print({"minutes": minutes, "total_seconds": td.total_seconds()})
+
+                    if minutes >= 1:
                         return render(
                             request,
                             self.template_name,
@@ -514,6 +522,156 @@ class UserNewCodeFactor(View):
                 )
         except Exception as _:
             raise _
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "an error occured please try again!"}},
+            )
+
+
+class ResetPasswordView(View):
+    template_name = "todos/user_reset_password.html"
+    context_object_name = "user"
+
+    def get(self, request) -> HttpResponse:
+        return render(request, self.template_name)
+
+    def post(self, request) -> HttpResponse | None:
+        user_code = UserNewCodeForm(request.POST)
+
+        try:
+            if user_code.is_valid():
+                data = user_code.cleaned_data
+                user = UserTodo.objects.get(email=data.get("email"))
+                rpwd = ResetPassword.objects.get(user=user)
+
+                if user.actived == True:
+
+                    rpwd.code = get_code()
+                    rpwd.updated_at = timezone.now()
+                    rpwd.save()
+
+                    #  send new code by email
+                    send_mail(
+                        subject="reset code account",
+                        message="code to reset account",
+                        from_email=os.getenv("SMTP_USER"),
+                        recipient_list=[user.email],
+                        html_message=f"use this code : <b>{rpwd.code}</b> to reset your account.<br>",
+                    )
+
+                    messages.info(
+                        request,
+                        message="new code has been send to reset your password",
+                    )
+
+                    return HttpResponseRedirect(
+                        redirect_to=reverse("todo_list:todo_user_new_password")
+                    )
+
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "unable to reset your account"}},
+                )
+            else:
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "invalid email address or password"}},
+                )
+        except UserTodo.DoesNotExist as _:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "invalid email address or password"}},
+            )
+        except Exception as _:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "an error occured please try again!"}},
+            )
+
+
+class NewPasswordView(View):
+    template_name = "todos/user_new_password.html"
+    context_object_name = "user"
+
+    def get(self, request) -> HttpResponse:
+        return render(request, self.template_name)
+
+    def post(self, request) -> HttpResponse | None:
+
+        user_form = UserNewPasswordForm(request.POST)
+
+        try:
+            if user_form.is_valid():
+                data = user_form.cleaned_data
+                rpwd = ResetPassword.objects.get(code=data.get("code"))
+
+                if rpwd.user.actived == True:
+
+                    # hours count in the pass since the creation account for currentime
+                    td = timezone.now() - rpwd.updated_at
+                    hours, _ = divmod(td.seconds, 3600)
+
+                    if hours >= 1:
+                        return render(
+                            request,
+                            self.template_name,
+                            {
+                                "errors": {
+                                    "user_message": "your code have been expired, get new code to reset your password"
+                                }
+                            },
+                        )
+
+                    # hash password with bcrypt
+                    password_hashed = bcrypt.hashpw(
+                        data.get("password").encode(), bcrypt.gensalt()
+                    )
+
+                    rpwd.user.password = password_hashed.decode()
+                    rpwd.user.updated_at = timezone.now()
+                    rpwd.user.save()
+
+                    #  send new code by email
+                    send_mail(
+                        subject="your password has reset successfully",
+                        message="password reset",
+                        from_email=os.getenv("SMTP_USER"),
+                        recipient_list=[rpwd.user.email],
+                        html_message=f"your password has reset successfully",
+                    )
+
+                    messages.success(
+                        request,
+                        message="password reset successfully",
+                    )
+
+                    return HttpResponseRedirect(
+                        redirect_to=reverse("todo_list:todo_user_login")
+                    )
+
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": {"user_message": "unable to reset your account"}},
+                )
+            else:
+                return render(
+                    request,
+                    self.template_name,
+                    {"errors": user_form.errors, "user": user_form},
+                )
+        except ResetPassword.DoesNotExist:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "invalid code"}},
+            )
+        except Exception as _:
             return render(
                 request,
                 self.template_name,

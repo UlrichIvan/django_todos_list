@@ -66,6 +66,9 @@
 								<a class="mt-2 text-start w-100 d-block" href="{% url 'todo_list:todo_user_account' %}">
 									You don't have account ? create it
 								</a>
+								<a class="mt-2 text-start my-2 w-100 d-block" href="{% url 'todo_list:todo_user_reset_password' %}">
+									forget your passord ? reset it
+								</a>
 								{% csrf_token %}
 							</form>
 						</div>

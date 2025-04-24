@@ -39,7 +39,6 @@
 						</div>
 						<div class="col-12 col-md-7">
 							<form action="{% url 'todo_list:todo_user_fact_auth' %}" method="post" class="user_form w-100 text-capitalize p-3">
-
 								<h2 class="text-center">verify your authentication</h2>
 								{% if errors.user_message %}
 									<div class="alert alert-danger">
@@ -60,7 +59,7 @@
 								{% endif %}
 								<div class="form-group mb-3">
 									<label for="code">enter your code</label>
-									<input type="text" name="code" value="{{user.code.value}}" id="code" class="form-control" autocomplete="off" placeholder="xxxxx.." autofocus/>
+									<input type="text" name="code" value="{{user.code.value}}" id="code" class="form-control" autocomplete="off" placeholder="xxxxx.." autofocus required/>
 								</div>
 
 								<input class="btn btn-primary w-100" type="submit" value="verify">
