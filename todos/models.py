@@ -28,7 +28,7 @@ class UserTodo(models.Model):
     actived = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
-    deleted_at = models.DateTimeField(default=None, null=True,blank=True)
+    deleted_at = models.DateTimeField(default=None, null=True, blank=True)
 
 
 class Todo(models.Model):
@@ -44,7 +44,7 @@ class Todo(models.Model):
     def get_fields(self):
         fields = []
         for field in Todo._meta.fields:
-            if field.name == "id":
+            if field.name in ["id", "user_id"]:
                 continue
             elif field.name == "done":
                 fields.append(

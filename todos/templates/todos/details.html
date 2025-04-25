@@ -28,13 +28,14 @@
 
 {% block body %}
 	<div class="container-fluid text-black text-capitalize px-0">
-		<div class="form-wrapper vh-100 vw-100 overflow-auto d-flex align-items-center justify-content-center">
+		{% include "./navbar.html" with title="Todo Details" %}
+		<div class="form-wrapper d-flex align-items-center justify-content-center">
 			<div class="container-wrapper mx-4 py-3 w-100">
 				<div class="container">
 					<div class="row align-items-center">
 						<div class="col-md-5 d-none d-md-block">
 							<div class="todo-image">
-								<img src="{% static 'todos/images/todo_details.jpg'%}" class="w-100" alt="todo_image_logo">
+								<img src="{% static 'todos/images/todo_details.jpg'%}" class="w-75" alt="todo_image_logo">
 							</div>
 						</div>
 						<div class="col-12 col-md-7">

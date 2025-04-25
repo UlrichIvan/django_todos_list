@@ -32,15 +32,27 @@ class TodosListView(View):
     def get(self, request: HttpRequest):
         try:
             user_todo = request.user_todo
-            todos_done = get_todos({"done":True, "deleted_at__isnull":True, "user_id":user_todo.get("user_id")},start=0,end=100)
-            todos_not_done = get_todos({"done":False, "deleted_at__isnull":True, "user_id":user_todo.get("user_id")},start=0,end=100)
-
+            todos_done = get_todos(
+                {
+                    "done": True,
+                    "deleted_at__isnull": True,
+                    "user_id": user_todo.get("user_id"),
+                }
+            )
+            todos_not_done = get_todos(
+                {
+                    "done": False,
+                    "deleted_at__isnull": True,
+                    "user_id": user_todo.get("user_id"),
+                }
+            )
             return render(
                 request,
                 self.template_name,
                 {"todos": {"todos_done": todos_done, "todos_not_done": todos_not_done}},
             )
-        except:
+        except Exception as e:
+            raise e
             return HttpResponse(content="An occurred, please try again!", status=500)
 
 

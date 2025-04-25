@@ -1,0 +1,18 @@
+{% load static %}
+
+<nav class="nav-bar-user bg-dark d-flex justify-content-between bg-dark align-items-center p-2">
+
+	<div class="nav-brand">
+		<a href="{% url 'todo_list:index' %}" class="text-decoration-none">
+			<img src="{% static "todos/images/brand.png"%}" width="35" alt="todo list"/>
+		</a>
+		<span class="text-capitalize text-white brand-name">{{title|default:"Todos list"}}</span>
+	</div>
+	<ul class="nav-bar-actions list-unstyled mb-0">
+		<a href="{% url 'todo_list:add_todo' %}">
+			<li class="nav-item add_todo" title="add todo">
+				<img src="{% static 'todos/images/plus.png'%}" width="30" alt="add todo"/>
+			</li>
+		</a>
+	</ul>
+</nav>

@@ -9,6 +9,17 @@
 			body {
 				user-select: none;
 			}
+			nav {
+				height: 63px;
+				max-height: 63px;
+			}
+			.form-wrapper,
+			.todos-list {
+
+				height: calc(100vh - 63px);
+				max-height: calc(100vh - 63px);
+				overflow-y: auto;
+			}
 		</style>
 		{% block css %}{% endblock %}
 	</head>

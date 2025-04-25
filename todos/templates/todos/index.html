@@ -2,6 +2,7 @@
 
 {% load static %}
 
+
 {% block css %}
 	<style>
 		nav {
@@ -35,22 +36,8 @@
 
 {% block body %}
 	<div class="container-fluid text-white text-capitalize px-0">
-		<nav class="nav-bar-user bg-dark d-flex justify-content-between bg-dark align-items-center p-2">
-
-			<div class="nav-brand">
-				<img src="{% static "todos/images/brand.png"%}" width="35" alt="todo list"/>
-				<span class=" text-capitalize brand-name">Todos list</span>
-			</div>
-			<ul class="nav-bar-actions list-unstyled mb-0">
-				<a href="{% url 'todo_list:add_todo' %}">
-					<li class="nav-item add_todo" title="add todo">
-						<img src="{% static 'todos/images/plus.png'%}" width="30" alt="add todo"/>
-					</li>
-				</a>
-			</ul>
-		</nav>
+		{% include "./navbar.html" with title="Todos list" %}
 		<div class="todos-list d-flex justify-content-center text-black">
-
 			{% if todos %}
 				<div class="container-fluid">
 					<div class="row h-100 justify-content-between">
@@ -60,7 +47,7 @@
 									<h3 class="text-center">todos list created</h3>
 									<ul class="list-group">
 										{% for todo in todos.todos_not_done %}
-											<li class="list-group-item d-flex justify-content-between align-items-center todo_not_done m-2" {% if todo.content %} title="{{todo.content}}" {% endif %}>
+											<li class="list-group-item d-flex justify-content-between align-items-center todo_not_done m-2">
 												<div class="container-fluid px-0">
 													<div class="row justify-content-between align-items-center">
 														<div class="col-12 col-sm-8">
@@ -103,7 +90,7 @@
 										<h3 class="text-center">todos list completed</h3>
 										<ul class="list-group todos_done">
 											{% for todo in todos.todos_done %}
-												<li class="list-group-item d-flex justify-content-between align-items-center m-2 todo_done fw-bolder" {% if todo.content %} title="{{todo.content}}" {% endif %}>
+												<li class="list-group-item d-flex justify-content-between align-items-center m-2 todo_done fw-bolder">
 													<div class="container-fluid px-0">
 														<div class="row justify-content-between align-items-center">
 															<div class="col-12 col-sm-8">
