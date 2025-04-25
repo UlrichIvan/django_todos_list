@@ -41,9 +41,23 @@
 						<div class="col-12 col-md-7">
 							<form action="{% url 'todo_list:add_todo' %}" method="post" class="todo_form w-100 text-capitalize p-3">
 								<h2 class="text-center">create todo</h2>
+								{% if messages %}
+									{% for message in messages %}
+										{% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+											<div class="alert alert-success">
+												{{message}}
+											</div>
+										{% endif %}
+										{% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+											<div class="alert alert-danger">
+												{{message}}
+											</div>
+										{% endif %}
+									{% endfor %}
+								{% endif %}
 								<div class="form-group mb-3">
 									<label for="title">title</label>
-									<input type="text" name="title" value="{{todo.title.value}}" id="title" class="form-control" placeholder="todo title" autofocus/>
+									<input required type="text" name="title" value="{{todo.title.value}}" id="title" class="form-control" placeholder="todo title" autofocus/>
 									{% if errors.title %}
 										<small class="text-danger">
 											{{errors.title}}
@@ -54,7 +68,7 @@
 									<label for="content">content</label>
 									<textarea name="content" placeholder="todo description" class="form-control" id="content">{{todo.content.value}}</textarea>
 								</div>
-								<input class="btn btn-primary w-100" type="submit" value="save todo">
+								<input required class="btn btn-primary w-100" type="submit" value="save todo">
 								<a class="btn btn-danger my-2 w-100" href="{% url 'todo_list:index' %}">Cancel</a>
 								{% csrf_token %}
 							</form>

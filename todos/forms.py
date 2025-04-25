@@ -7,7 +7,7 @@ from .models import Todo, UserTodo, FactorAuth
 class TodoForm(ModelForm):
     class Meta:
         model = Todo
-        exclude = ["created_at", "updated_at", "deleted_at", "done"]
+        exclude = ["created_at", "updated_at", "deleted_at", "done", "user_id"]
 
 
 class EditTodoForm(ModelForm):

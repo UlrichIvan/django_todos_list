@@ -4,7 +4,7 @@
   "settings": {
     "width": 2000,
     "height": 2000,
-    "scrollTop": -53.5714,
+    "scrollTop": -2.9761,
     "scrollLeft": 0,
     "zoomLevel": 1,
     "show": 431,
@@ -1063,20 +1063,20 @@
       "XadM8SXCO_6f5EEST3Kbt": {
         "id": "XadM8SXCO_6f5EEST3Kbt",
         "tableId": "Gwwoi2HNdtdbMGAUT2N5Q",
-        "name": "code_actived",
+        "name": "code",
         "comment": "activation code",
         "dataType": "varchar(10)",
         "default": "NULL",
         "options": 0,
         "ui": {
           "keys": 0,
-          "widthName": 81,
+          "widthName": 60,
           "widthComment": 94,
           "widthDataType": 72,
           "widthDefault": 60
         },
         "meta": {
-          "updateAt": 1745394559530,
+          "updateAt": 1745505090068,
           "createAt": 1745394217839
         }
       },
@@ -1352,7 +1352,7 @@
           "columnIds": [
             "E3bKG81DrVgQzJpum5CpY"
           ],
-          "x": 556,
+          "x": 545,
           "y": 124,
           "direction": 2
         },
@@ -1408,7 +1408,7 @@
           "columnIds": [
             "E3bKG81DrVgQzJpum5CpY"
           ],
-          "x": 299,
+          "x": 293.5,
           "y": 346,
           "direction": 8
         },
@@ -1436,7 +1436,7 @@
           "columnIds": [
             "E3bKG81DrVgQzJpum5CpY"
           ],
-          "x": 556,
+          "x": 545,
           "y": 272,
           "direction": 2
         },
@@ -1986,7 +1986,7 @@
       1745394217828,
       -1,
       {
-        "name": 1745394500017,
+        "name": 1745505090065,
         "dataType": 1745394217828,
         "default": 1745394217828,
         "comment": 1745394217828,

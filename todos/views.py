@@ -1,15 +1,16 @@
+import datetime
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.views.generic.detail import DetailView
-from django.views.generic.list import ListView
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib import messages
-from todos.utils import get_code
+from todos.services import get_todos
+from todos.utils import get_code, get_jwt_token
 from .models import FactorAuth, ResetPassword, Todo, UserTodo
 from .forms import (
     TodoForm,
@@ -25,14 +26,22 @@ import os
 import bcrypt
 
 
-class TodosListView(ListView):
+class TodosListView(View):
     template_name = "todos/index.html"
-    context_object_name = "todos"
 
-    def get_queryset(self):
-        todos_done = Todo.objects.filter(done=True, deleted_at__isnull=True)[:100]
-        todos_not_done = Todo.objects.filter(done=False, deleted_at__isnull=True)[:100]
-        return {"todos_done": todos_done, "todos_not_done": todos_not_done}
+    def get(self, request: HttpRequest):
+        try:
+            user_todo = request.user_todo
+            todos_done = get_todos({"done":True, "deleted_at__isnull":True, "user_id":user_todo.get("user_id")},start=0,end=100)
+            todos_not_done = get_todos({"done":False, "deleted_at__isnull":True, "user_id":user_todo.get("user_id")},start=0,end=100)
+
+            return render(
+                request,
+                self.template_name,
+                {"todos": {"todos_done": todos_done, "todos_not_done": todos_not_done}},
+            )
+        except:
+            return HttpResponse(content="An occurred, please try again!", status=500)
 
 
 class AddTodo(View):
@@ -46,9 +55,25 @@ class AddTodo(View):
     def post(self, request) -> HttpResponse | None:
         todo_form = TodoForm(request.POST)
         try:
+            user_todo = request.user_todo
             if todo_form.is_valid():
-                todo_form.save()
-                return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
+                data = todo_form.cleaned_data
+                todo = Todo(**data)
+                todo.user_id = UserTodo.objects.get(id=user_todo.get("user_id"))
+                todo.save()
+                messages.success(
+                    request,
+                    message="todo has been created successfully. another to ? add it",
+                )
+                return render(
+                    request,
+                    self.template_name,
+                )
+
+            messages.error(
+                request,
+                message="invalid form data",
+            )
 
             return render(
                 request,
@@ -56,8 +81,20 @@ class AddTodo(View):
                 {"errors": todo_form.errors, "todo": todo_form},
             )
 
-        except ValidationError:
-            return HttpResponse(content="An exception occurred", status=500)
+        except (ValidationError, Exception):
+            messages.error(
+                request,
+                message="An occurred, please try again!",
+            )
+
+            return render(
+                request,
+                self.template_name,
+                {
+                    "errors": todo_form.errors,
+                    "todo": todo_form,
+                },
+            )
 
 
 class EditTodo(View):
@@ -441,6 +478,14 @@ class UserFactAuth(View):
                     user_fact_auth.is_auth = True
                     user_fact_auth.save()
 
+                    request.session["token"] = get_jwt_token(
+                        payload={
+                            "is_auth": True,
+                            "user_id": str(user_fact_auth.user.id),
+                            "exp": datetime.datetime.now()
+                            + datetime.timedelta(days=365),
+                        }
+                    )
                     # send email
                     send_mail(
                         subject="new connection on your account",

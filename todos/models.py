@@ -3,16 +3,6 @@ from django.db import models
 import uuid
 
 
-class Account(models.Model):
-    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
-    code = models.CharField(max_length=10, null=False, default=None, unique=True)
-    code_login = models.CharField(max_length=10, null=True, default=None, unique=True)
-    actived = models.BooleanField(default=False)
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(default=timezone.now)
-    deleted_at = models.DateTimeField(default=None, null=True)
-
-
 class UserTodo(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True)
     first_name = models.CharField(
@@ -38,7 +28,7 @@ class UserTodo(models.Model):
     actived = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
-    deleted_at = models.DateTimeField(default=None, null=True)
+    deleted_at = models.DateTimeField(default=None, null=True,blank=True)
 
 
 class Todo(models.Model):
@@ -48,7 +38,7 @@ class Todo(models.Model):
     done = models.BooleanField(default=False, null=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
-    deleted_at = models.DateTimeField(default=None, null=True)
+    deleted_at = models.DateTimeField(default=None, null=True, blank=True)
     user_id = models.ForeignKey(to=UserTodo, on_delete=models.SET_NULL, null=True)
 
     def get_fields(self):
