@@ -13,7 +13,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 try:
     load_dotenv(f".env.{ENVIRONMENT}")
 except (FileNotFoundError, Exception) as _:
-    print(ENVIRONMENT)
     load_dotenv()
 
 

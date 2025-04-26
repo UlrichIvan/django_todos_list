@@ -804,7 +804,6 @@ class LogOut(View):
     def get(self, request: HttpRequest) -> HttpResponse:
         try:
             request.session.clear()
-            Session.clear()
             return HttpResponseRedirect(
                 redirect_to=reverse("todo_list:todo_user_login")
             )

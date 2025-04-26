@@ -24,8 +24,7 @@ class AuthMiddleware:
                 else:
                     token_decoded = token_verify(token)
                     if token_decoded == False:
-                        Session.clear()
-                        del request.session["token"]
+                        request.session.clear()
                         return HttpResponseRedirect(
                             redirect_to=reverse("todo_list:todo_user_login")
                         )
@@ -39,8 +38,7 @@ class AuthMiddleware:
                 if token != None:
                     token_decoded = token_verify(token)
                     if token_decoded == False:
-                        Session.objects.clear()
-                        del request.session["token"]
+                        request.session.clear()
                         return HttpResponseRedirect(
                             redirect_to=reverse("todo_list:todo_user_login")
                         )
