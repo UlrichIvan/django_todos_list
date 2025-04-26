@@ -8,11 +8,26 @@
 		</a>
 		<span class="text-capitalize text-white brand-name">{{title|default:"Todos list"}}</span>
 	</div>
-	<ul class="nav-bar-actions list-unstyled mb-0">
-		<a href="{% url 'todo_list:add_todo' %}">
-			<li class="nav-item add_todo" title="add todo">
-				<img src="{% static 'todos/images/plus.png'%}" width="30" alt="add todo"/>
+	<ul class="nav-bar-actions list-unstyled d-flex align-items-center mb-0">
+		{% if user_name %}
+
+			<li class="nav-item logout mx-2" title="{{user_name|upper}}">
+				<span class="btn btn-danger fw-bolder rounded-circle">
+					{{user_name|make_list|first}}
+				</span>
 			</li>
-		</a>
+
+		{% endif %}
+
+		<li class="nav-item logout mx-2" title="logout">
+			<a class="btn btn-outline-success fw-bolder" href="{% url 'todo_list:logout' %}">
+				log out
+			</a>
+		</li>
+		<li class="nav-item add_todo" title="add todo">
+			<a href="{% url 'todo_list:add_todo' %}">
+				<img src="{% static 'todos/images/plus.png'%}" width="30" alt="add todo"/>
+			</a>
+		</li>
 	</ul>
 </nav>

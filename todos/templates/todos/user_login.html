@@ -27,13 +27,13 @@
 
 {% block body %}
 	<div class="container-fluid text-black text-capitalize px-0">
-		<div class="form-wrapper vh-100 vw-100 overflow-auto d-flex align-items-center justify-content-center">
+		<div class="form-wrapper d-flex align-items-center justify-content-center">
 			<div class="container-wrapper mx-4 py-3 w-100">
 				<div class="container">
 					<div class="row align-items-center">
 						<div class="col-md-5 d-none d-md-block">
 							<div class="todo-image">
-								<img src="{% static 'todos/images/user_login.png'%}" class="w-100" alt="user_register_secure">
+								<img src="{% static 'todos/images/user_login.png'%}" class="w-75" alt="user_register_secure">
 							</div>
 						</div>
 						<div class="col-12 col-md-7">
@@ -54,15 +54,15 @@
 								{% endif %}
 								<div class="form-group mb-3">
 									<label for="email">enter your email</label>
-									<input type="email" name="email" value="{{user.email.value}}" id="email" class="form-control" placeholder="your email account" autofocus/>
+									<input required type="email" name="email" value="{{user.email.value}}" id="email" class="form-control" placeholder="your email account" autofocus/>
 								</div>
 
 								<div class="form-group mb-3">
 									<label for="password">enter your password</label>
-									<input type="password" name="password" value="{{user.password.value}}" id="password" class="form-control" autocomplete="off" placeholder="your password account"/>
+									<input required type="password" name="password" value="{{user.password.value}}" id="password" class="form-control" autocomplete="off" placeholder="your password account"/>
 								</div>
 
-								<input class="btn btn-primary w-100" type="submit" value="login">
+								<input required class="btn btn-primary w-100" type="submit" value="login">
 								<a class="mt-2 text-start w-100 d-block" href="{% url 'todo_list:todo_user_account' %}">
 									You don't have account ? create it
 								</a>

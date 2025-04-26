@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    LogOut,
     TodosListView,
     AddTodo,
     EditTodo,
@@ -40,4 +41,5 @@ urlpatterns = [
         name="todo_user_reset_password",
     ),
     path("newpassword", NewPasswordView.as_view(), name="todo_user_new_password"),
+    path("logout", LogOut.as_view(), name="logout"),
 ]

@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib import messages
+from django.contrib.sessions.models import Session
 from todos.services import get_todos
 from todos.utils import get_code, get_jwt_token
 from .models import FactorAuth, ResetPassword, Todo, UserTodo
@@ -49,11 +50,19 @@ class TodosListView(View):
             return render(
                 request,
                 self.template_name,
-                {"todos": {"todos_done": todos_done, "todos_not_done": todos_not_done}},
+                {
+                    "todos": {
+                        "todos_done": todos_done,
+                        "todos_not_done": todos_not_done,
+                    },
+                    "user_name": user_todo.get("user_name"),
+                },
             )
         except Exception as e:
-            raise e
-            return HttpResponse(content="An occurred, please try again!", status=500)
+            return render(
+                request,
+                "500.html",
+            )
 
 
 class AddTodo(View):
@@ -62,7 +71,11 @@ class AddTodo(View):
 
     def get(self, request) -> HttpResponse:
         form_todo = TodoForm()
-        return render(request, self.template_name, {"form_todo": form_todo})
+        return render(
+            request,
+            self.template_name,
+            {"form_todo": form_todo, "user_name": request.user_todo.get("user_name")},
+        )
 
     def post(self, request) -> HttpResponse | None:
         todo_form = TodoForm(request.POST)
@@ -75,11 +88,12 @@ class AddTodo(View):
                 todo.save()
                 messages.success(
                     request,
-                    message="todo has been created successfully. another to ? add it",
+                    message="todo has been created successfully. create another todo if you want",
                 )
                 return render(
                     request,
                     self.template_name,
+                    {"user_name": request.user_todo.get("user_name")},
                 )
 
             messages.error(
@@ -90,13 +104,17 @@ class AddTodo(View):
             return render(
                 request,
                 self.template_name,
-                {"errors": todo_form.errors, "todo": todo_form},
+                {
+                    "errors": todo_form.errors,
+                    "todo": todo_form,
+                    "user_name": request.user_todo.get("user_name"),
+                },
             )
 
         except (ValidationError, Exception):
             messages.error(
                 request,
-                message="An occurred, please try again!",
+                message="An occurred, please try again, later",
             )
 
             return render(
@@ -105,6 +123,7 @@ class AddTodo(View):
                 {
                     "errors": todo_form.errors,
                     "todo": todo_form,
+                    "user_name": request.user_todo.get("user_name"),
                 },
             )
 
@@ -119,8 +138,16 @@ class EditTodo(View):
 
         edit_todo = EditTodoForm(instance=todo)
 
+        user_todo = request.user_todo
+
         return render(
-            request, self.template_name, {"edit_todo": edit_todo, "todo": todo}
+            request,
+            self.template_name,
+            {
+                "edit_todo": edit_todo,
+                "todo": todo,
+                "user_name": user_todo.get("user_name"),
+            },
         )
 
     def post(self, request, id) -> HttpResponse | None:
@@ -128,6 +155,8 @@ class EditTodo(View):
         todo = get_object_or_404(Todo, pk=id)
 
         edit_form = EditTodoForm(request.POST)
+
+        user_name = request.user_todo.get("user_name")
 
         if edit_form.is_valid():
             data = edit_form.cleaned_data
@@ -141,7 +170,12 @@ class EditTodo(View):
         return render(
             request,
             self.template_name,
-            {"errors": edit_form.errors, "edit_todo": edit_form, "todo": todo},
+            {
+                "errors": edit_form.errors,
+                "edit_todo": edit_form,
+                "todo": todo,
+                "user_name": user_name,
+            },
         )
 
 
@@ -150,6 +184,12 @@ class TodoDetails(DetailView):
     context_object_name = "todo"
     model = Todo
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_todo = self.request.user_todo
+        context["user_name"] = user_todo.get("user_name")
+        return context
+
 
 class TodoDelete(View):
     template_name = "todos/delete.html"
@@ -157,7 +197,12 @@ class TodoDelete(View):
 
     def get(self, request, id) -> HttpResponse:
         todo = get_object_or_404(Todo, pk=id)
-        return render(request, self.template_name, {"todo": todo})
+        user_todo = request.user_todo
+        return render(
+            request,
+            self.template_name,
+            {"todo": todo, "user_name": user_todo.get("user_name")},
+        )
 
     def post(self, _, id) -> HttpResponse | None:
         todo = get_object_or_404(Todo, pk=id)
@@ -270,7 +315,7 @@ class UserActiveAccount(View):
                 else:
                     # hours count in the pass since the creation account for currentime
                     td = timezone.now() - user.updated_at
-                    hours, _ = divmod(td.total_seconds(), 3600)
+                    hours, _ = divmod(td.seconds, 3600)
 
                     if hours >= 1:
                         return render(
@@ -308,6 +353,16 @@ class UserActiveAccount(View):
                     request,
                     self.template_name,
                     {"errors": {"user_message": "unable to active your account"}},
+                )
+            except Exception:
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "errors": {
+                            "user_message": "an error occured please try again later"
+                        }
+                    },
                 )
 
         else:
@@ -405,6 +460,7 @@ class UserLogin(View):
 
                     f_auth = FactorAuth.objects.get(user=user)
                     f_auth.code = get_code()
+                    f_auth.updated_at=timezone.now()
                     f_auth.save()
 
                     # send email
@@ -434,7 +490,7 @@ class UserLogin(View):
                 return render(
                     request,
                     self.template_name,
-                    {"errors": {"user_message": "invalid email or passwor"}},
+                    {"errors": {"user_message": "invalid email or password"}},
                 )
         except Exception as _:
             return render(
@@ -475,9 +531,7 @@ class UserFactAuth(View):
 
                     minutes, _ = divmod(td.total_seconds(), 60)
 
-                    print({"minutes": minutes, "total_seconds": td.total_seconds()})
-
-                    if minutes >= 1:
+                    if minutes > 1:
                         return render(
                             request,
                             self.template_name,
@@ -487,13 +541,13 @@ class UserFactAuth(View):
                                 }
                             },
                         )
-                    user_fact_auth.is_auth = True
                     user_fact_auth.save()
 
                     request.session["token"] = get_jwt_token(
                         payload={
                             "is_auth": True,
                             "user_id": str(user_fact_auth.user.id),
+                            "user_name": user_fact_auth.user.last_name,
                             "exp": datetime.datetime.now()
                             + datetime.timedelta(days=365),
                         }
@@ -513,6 +567,17 @@ class UserFactAuth(View):
                     request,
                     self.template_name,
                     {"errors": {"user_message": "invalid code authentication"}},
+                )
+
+            except Exception:
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "errors": {
+                            "user_message": "error occured, please try again later"
+                        }
+                    },
                 )
 
         else:
@@ -578,7 +643,6 @@ class UserNewCodeFactor(View):
                     {"errors": {"user_message": "invalid email address or password"}},
                 )
         except Exception as _:
-            raise _
             return render(
                 request,
                 self.template_name,
@@ -733,4 +797,18 @@ class NewPasswordView(View):
                 request,
                 self.template_name,
                 {"errors": {"user_message": "an error occured please try again!"}},
+            )
+
+
+class LogOut(View):
+    def get(self, request: HttpRequest) -> HttpResponse:
+        try:
+            request.session.clear()
+            Session.clear()
+            return HttpResponseRedirect(
+                redirect_to=reverse("todo_list:todo_user_login")
+            )
+        except (Session.DoesNotExist, Exception):
+            return HttpResponseRedirect(
+                redirect_to=reverse("todo_list:todo_user_login")
             )

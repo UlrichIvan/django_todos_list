@@ -13,6 +13,8 @@ PROTECTED_VIEWS = [
     "delete_todo",
 ]
 
+EXCLUDED_VIEWS = ["logout"]
+
 
 def token_verify(token: str) -> any:
     """secode token of user
