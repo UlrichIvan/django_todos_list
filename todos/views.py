@@ -460,7 +460,7 @@ class UserLogin(View):
 
                     f_auth = FactorAuth.objects.get(user=user)
                     f_auth.code = get_code()
-                    f_auth.updated_at=timezone.now()
+                    f_auth.updated_at = timezone.now()
                     f_auth.save()
 
                     # send email

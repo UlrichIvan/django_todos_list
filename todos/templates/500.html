@@ -1,11 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>500 interval error</title>
-	</head>
-	<body>
-		<p>500 interval error</p>
-	</body>
-</html>
+{% extends "./base.html" %}
+
+{% load static %}
+
+{% block css %}
+	<style>
+		.not-found {
+			background-color: #123;
+		}
+	</style>
+{% endblock %}
+
+{% block body %}
+	<div class="container-fluid vh-100 text-white text-capitalize px-0">
+		<div class="not-found h-100 text-capitalize overflow-hidden d-flex flex-column justify-content-center align-items-center text-white">
+			<p class="text-center">
+				<span>something going wrong. go to</span>
+				<a href="{% url 'todo_list:index' %}">todo list</a>
+			</p>
+			<div class="not-found-content">
+				<img src="{% static 'todos/images/500.png'%}" alt="page not found">
+			</div>
+		</div>
+	</div>
+{% endblock %}

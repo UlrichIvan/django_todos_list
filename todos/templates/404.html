@@ -2,11 +2,24 @@
 
 {% load static %}
 
+{% block css %}
+	<style>
+		.not-found {
+			background-color: #123;
+		}
+	</style>
+{% endblock %}
 
 {% block body %}
-	<div class="container-fluid text-white text-capitalize px-0">
-		<div class="todos-list d-flex justify-content-center text-black">
-			<p>page not found</p>
+	<div class="container-fluid vh-100 text-white text-capitalize px-0">
+		<div class="not-found h-100 overflow-hidden d-flex flex-column justify-content-center align-items-center text-white">
+			<p class="text-center">
+				<span>page not found. go to</span>
+				<a href="{% url 'todo_list:index' %}">todo list</a>
+			</p>
+			<div class="not-found-content">
+				<img src="{% static 'todos/images/404.png'%}" alt="page not found">
+			</div>
 		</div>
 	</div>
 {% endblock %}
