@@ -62,7 +62,7 @@
    python manage.py runserver
 ```
 
-- After running application, you can use it to manage your todo list with authentication.
+- After running application, you can use it to manage your todos list with authentication.
 
 if you have any questions or some needs, you can contact [me](https://www.linkedin.com/in/ulrich-chokomeny/) in linkedin platform by message.<br>
 
