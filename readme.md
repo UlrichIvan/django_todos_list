@@ -38,7 +38,7 @@
 
 - Clone the application in your project folder with link : [https://github.com/UlrichIvan/django_todos_list.git](https://github.com/UlrichIvan/django_todos_list.git)
 
-- Create 4 files environment(.env, .env.local, .env.staging, .env.prod) and use the sample content file of `env.dist.sample` file at the root of this repository to fill `env.local, .env.staging, .env.prod` created,and use `env.sample` file to fill `.env` file created.
+- Create 4 files environment(.env, .env.local, .env.staging, .env.prod) and use the sample content file of `env.dist.sample` file at the root of this repository to fill `.env.local, .env.staging, .env.prod` created,and use `env.sample` file to fill `.env` file created.
 
 - To fill django `SECRET_KEY` use this [tool](https://djecrety.ir/) online.
 
