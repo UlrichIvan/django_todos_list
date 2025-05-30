@@ -34,7 +34,7 @@
    python -m venv .venv
 ```
 
-<br> make sure that your python environment has not the name `.env`, because it is the name of the default environment that you will use in the future of this aplication.
+<br> make sure that your python environment has not the name `.env`, because it is the name of the default environment that you will use in the future of this application.
 
 - Clone the application in your project folder with link : [https://github.com/UlrichIvan/django_todos_list.git](https://github.com/UlrichIvan/django_todos_list.git)
 
@@ -43,12 +43,6 @@
 - To fill django `SECRET_KEY` use this [tool](https://djecrety.ir/) online.
 
 - Create the database `todo_app` on your `local` or `staging` or `prod` environment database.
-
-- make the migrations with django cli to create all necessaries tables to run application correctly.
-
-```cmd
-   python manage.py makemigrations
-```
 
 - Apply migrations with django cli
 
