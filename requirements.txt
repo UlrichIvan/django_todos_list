@@ -1,14 +1,15 @@
-PyJWT==2.10.1
 asgiref==3.8.1
 astroid==3.3.9
 bcrypt==4.3.0
 dill==0.4.0
 Django==5.2
+dotenv==0.9.9
 isort==6.0.1
 mccabe==0.7.0
 platformdirs==4.3.7
 psycopg2==2.9.10
 pycryptodome==3.22.0
+PyJWT==2.10.1
 pylint==3.3.6
 pylint-django==2.6.1
 pylint-plugin-utils==0.8.2
