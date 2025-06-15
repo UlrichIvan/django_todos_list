@@ -29,7 +29,7 @@ class AuthMiddleware:
                             redirect_to=reverse("todo_list:todo_user_login")
                         )
                     else:
-                        request.user_todo = token_decoded
+                        setattr(request,"user_todo",token_decoded)
                         return None
 
             elif route_name in EXCLUDED_VIEWS:
@@ -49,5 +49,5 @@ class AuthMiddleware:
                 return None
         except Exception:
             return HttpResponseServerError(
-                content="an error occured, please trai agin later!"
+                content="An error occured, please try agin later!"
             )

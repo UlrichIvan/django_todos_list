@@ -1,3 +1,4 @@
+from typing import Any
 from django.urls import resolve
 from django.http import HttpRequest
 import jwt
@@ -16,7 +17,7 @@ PROTECTED_VIEWS = [
 EXCLUDED_VIEWS = ["logout"]
 
 
-def token_verify(token: str) -> any:
+def token_verify(token: str) -> Any:
     """secode token of user
 
     Args:
