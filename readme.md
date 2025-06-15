@@ -41,6 +41,12 @@
   .\.venv\Scripts\activate.bat # for Windows
 ```
 
+- install all packages for the project:
+
+```cmd
+  pip install -r requirements.txt
+```
+
 <br> make sure that your python environment has not the name `.env`, because it is the name of the default environment that you will use in the future of this application.
 
 - Clone the application in your project folder with link : [https://github.com/UlrichIvan/django_todos_list.git](https://github.com/UlrichIvan/django_todos_list.git)
