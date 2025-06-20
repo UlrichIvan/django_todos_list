@@ -13,7 +13,7 @@ class TodoForm(ModelForm):
 class EditTodoForm(ModelForm):
     class Meta:
         model = Todo
-        fields = ["title", "content", "done"]
+        fields = ["title", "content", "done", "expired_at"]
 
 
 class UserForm(ModelForm):

@@ -69,7 +69,11 @@
 									<label for="content">content</label>
 									<textarea name="content" placeholder="todo description" class="form-control" id="content">{{todo.content.value}}</textarea>
 								</div>
-								<input required class="btn btn-primary w-100" type="submit" value="save todo">
+								<div class="form-group mb-3">
+									<label for="content">Expired</label>
+									<input type="datetime-local" value="{{todo.expired_at.value}}" name="expired_at" placeholder="todo expired date" class="form-control" id="expired_at">{{todo.content.value}}</input>
+								</div>
+								<input  class="btn btn-primary w-100" type="submit" value="save todo">
 								<a class="btn btn-danger my-2 w-100" href="{% url 'todo_list:index' %}">Cancel</a>
 								{% csrf_token %}
 							</form>

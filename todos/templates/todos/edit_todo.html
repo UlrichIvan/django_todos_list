@@ -44,7 +44,7 @@
 								<h2 class="text-center">edit todo</h2>
 								<div class="form-group mb-3">
 									<label for="title">title</label>
-									<input type="text" name="title" value="{{edit_todo.title.value}}" id="title" class="form-control" placeholder="todo title" autofocus/>
+									<input type="text" name="title" value="{{todo.title}}" id="title" class="form-control" placeholder="todo title" autofocus/>
 									{% if errors.title %}
 										<small class="text-danger">
 											{{errors.title}}
@@ -52,12 +52,16 @@
 									{% endif %}
 								</div>
 								<div class="form-group mb-3">
-									<label for="title">content</label>
-									<textarea name="content" placeholder="description of todo" class="form-control" id="content">{{edit_todo.content.value}}</textarea>
+									<label for="content">content</label>
+									<textarea name="content" placeholder="description of todo" class="form-control" id="content">{{todo.content}}</textarea>
 								</div>
 								<div class="form-group mb-3">
-									{{edit_todo.done}}
-									<label for="id_done">done</label>
+									<input type="checkbox" name="done" checked="{{todo.done}}" placeholder="todo expired date" class="form-ckeck" id="done"/>
+									<label for="done">done</label>
+								</div>
+								<div class="form-group mb-3">
+									<label for="content">Expired</label>
+									<input type="datetime-local" name="expired_at" value="{{todo.expired_at}}" placeholder="todo expired date" class="form-control" id="expired_at">{{todo.content.value}}</input>
 								</div>
 								<input class="btn btn-primary w-100" type="submit" value="update todo">
 								{% csrf_token %}

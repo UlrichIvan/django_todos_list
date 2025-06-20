@@ -131,17 +131,17 @@ class EditTodo(View):
     def get(self, request, id) -> HttpResponse:
 
         todo = get_object_or_404(Todo, pk=id)
-
-        edit_todo = EditTodoForm(instance=todo)
-
         user_todo = request.user_todo
 
         return render(
             request,
             self.template_name,
             {
-                "edit_todo": edit_todo,
-                "todo": todo,
+                "todo": {
+                    **model_to_dict(todo),
+                    "id": id,
+                    "expired_at": todo.get_expired(),
+                },
                 "user_name": user_todo.get("user_name"),
             },
         )
@@ -150,17 +150,17 @@ class EditTodo(View):
 
         todo = get_object_or_404(Todo, pk=id)
 
-        edit_form = EditTodoForm(request.POST)
+        edit_form = TodoForm(request.POST)
 
         user_name = request.user_todo.get("user_name")
-
         if edit_form.is_valid():
             data = edit_form.cleaned_data
             todo.title = data.get("title", todo.title)
             todo.content = data.get("content", todo.content)
             todo.done = data.get("done", todo.done)
             todo.updated_at = timezone.now()
-            todo.save(force_update=True)
+            todo.expired_at = data.get("expired_at", todo.expired_at)
+            todo.save()
             return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
 
         return render(
@@ -168,8 +168,11 @@ class EditTodo(View):
             self.template_name,
             {
                 "errors": edit_form.errors,
-                "edit_todo": edit_form,
-                "todo": todo,
+                "todo": {
+                    **model_to_dict(todo),
+                    "id": id,
+                    "expired_at": todo.get_expired(),
+                },
                 "user_name": user_name,
             },
         )
@@ -726,7 +729,7 @@ class NewPasswordView(View):
             if user_form.is_valid():
                 data = user_form.cleaned_data
                 rpwd = ResetPassword.objects.get(code=data.get("code"))
-                user= rpwd.user
+                user = rpwd.user
                 if user and user.actived == True:
 
                     # hours count in the pass since the creation account for currentime

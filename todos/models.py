@@ -1,5 +1,7 @@
+from typing import Iterable
 from django.utils import timezone
 from django.db import models
+from django.core.validators import RegexValidator
 import uuid
 
 
@@ -33,13 +35,28 @@ class UserTodo(models.Model):
 
 class Todo(models.Model):
     id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
-    title = models.CharField(max_length=255, null=False, blank=False, unique=False)
+    title = models.CharField(
+        max_length=255,
+        null=False,
+        blank=False,
+        unique=False,
+        validators=[
+            RegexValidator(
+                regex=r"^[a-zA-Z ]{1,255}$",
+                message="title must be contains at least 1 alphabetics characters",
+            )
+        ],
+    )
     content = models.TextField(null=True, blank=True)
     done = models.BooleanField(default=False, null=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(default=None, null=True, blank=True)
+    expired_at = models.DateTimeField(default=None, null=True, blank=True)
     user_id = models.ForeignKey(to=UserTodo, on_delete=models.SET_NULL, null=True)
+
+    def get_expired(self) -> str | None:
+        return self.expired_at.strftime("%Y-%m-%dT%H:%M") if self.expired_at else None
 
     def get_fields(self):
         fields = []
@@ -50,7 +67,7 @@ class Todo(models.Model):
                 fields.append(
                     (field.name, "yes" if getattr(self, field.name) else "no")
                 )
-            elif field.name in ["created_at", "updated_at"]:
+            elif field.name in ["created_at", "updated_at", "expired_at"]:
                 fields.append((field.name.strip("_at"), getattr(self, field.name)))
             elif field.name in ["deleted_at"]:
                 fields.append(
