@@ -11,6 +11,7 @@ from django.core.mail import send_mail
 from django.contrib import messages
 from django.contrib.sessions.models import Session
 from todos.services import get_todos
+from django.forms.models import model_to_dict
 from todos.utils import get_code, get_jwt_token
 from .models import FactorAuth, ResetPassword, Todo, UserTodo
 from .forms import (
@@ -32,28 +33,23 @@ class TodosListView(View):
 
     def get(self, request: HttpRequest):
         try:
-            user_todo = request.user_todo
-            todos_done = get_todos(
-                {
-                    "done": True,
-                    "deleted_at__isnull": True,
-                    "user_id": user_todo.get("user_id"),
-                }
-            )
-            todos_not_done = get_todos(
-                {
-                    "done": False,
-                    "deleted_at__isnull": True,
-                    "user_id": user_todo.get("user_id"),
-                }
-            )
+            user_todo: dict = getattr(request, "user_todo")
+            t_done = Todo.objects.filter(
+                done=True, deleted_at__isnull=True, user_id__id=user_todo.get("user_id")
+            )[0:100]
+            t_not_done = Todo.objects.filter(
+                done=False,
+                deleted_at__isnull=True,
+                user_id__id=user_todo.get("user_id"),
+            )[0:100]
+
             return render(
                 request,
                 self.template_name,
                 {
                     "todos": {
-                        "todos_done": todos_done,
-                        "todos_not_done": todos_not_done,
+                        "todos_done": t_done,
+                        "todos_not_done": t_not_done,
                     },
                     "user_name": user_todo.get("user_name"),
                 },
@@ -186,7 +182,7 @@ class TodoDetails(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user_todo = self.request.user_todo
+        user_todo: dict = getattr(self.request, "user_todo")
         context["user_name"] = user_todo.get("user_name")
         return context
 
@@ -241,7 +237,7 @@ class UserCreate(View):
 
                 # hash password with bcrypt
                 password_hashed = bcrypt.hashpw(
-                    data.get("password").encode(), bcrypt.gensalt()
+                    str(data.get("password")).encode(), bcrypt.gensalt()
                 )
 
                 user.password = password_hashed.decode()
@@ -454,15 +450,13 @@ class UserLogin(View):
                 user = UserTodo.objects.get(email=data.get("email"))
 
                 if user.actived == True and bcrypt.checkpw(
-                    data.get("password").encode(),
+                    data.get("password", "").encode(),
                     user.password.encode(),
                 ):
-
-                    f_auth = FactorAuth.objects.get(user=user)
+                    f_auth = UserTodo.objects.get(factorauth__user=user)
                     f_auth.code = get_code()
                     f_auth.updated_at = timezone.now()
                     f_auth.save()
-
                     # send email
                     send_mail(
                         subject="check your authentication",
@@ -517,15 +511,17 @@ class UserFactAuth(View):
             data = user_fact_auth_form.cleaned_data
 
             try:
-                user_fact_auth = self.model.objects.get(code=data.get("code"))
-
-                if user_fact_auth.user.actived == False:
+                user_fact_auth: FactorAuth = self.model.objects.get(
+                    code=data.get("code")
+                )
+                user: UserTodo | None = user_fact_auth.user
+                if user and user.actived == False:
                     return render(
                         request,
                         self.template_name,
                         {"errors": {"user_message": "your code is mistake"}},
                     )
-                else:
+                elif user and user.actived == True:
                     # hours count in the pass since the creation account for currentime
                     td = timezone.now() - user_fact_auth.updated_at
 
@@ -546,8 +542,8 @@ class UserFactAuth(View):
                     request.session["token"] = get_jwt_token(
                         payload={
                             "is_auth": True,
-                            "user_id": str(user_fact_auth.user.id),
-                            "user_name": user_fact_auth.user.last_name,
+                            "user_id": str(user.id),
+                            "user_name": user.last_name,
                             "exp": datetime.datetime.now()
                             + datetime.timedelta(days=365),
                         }
@@ -557,8 +553,8 @@ class UserFactAuth(View):
                         subject="new connection on your account",
                         message=f"new connection",
                         from_email=os.getenv("SMTP_USER"),
-                        recipient_list=[user_fact_auth.user.email],
-                        html_message=f"Dear <b>{user_fact_auth.user.last_name}</b>, your have a new connection on your Account",
+                        recipient_list=[user.email],
+                        html_message=f"Dear <b>{user.last_name}</b>, your have a new connection on your Account",
                     )
 
                     return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
@@ -730,8 +726,8 @@ class NewPasswordView(View):
             if user_form.is_valid():
                 data = user_form.cleaned_data
                 rpwd = ResetPassword.objects.get(code=data.get("code"))
-
-                if rpwd.user.actived == True:
+                user= rpwd.user
+                if user and user.actived == True:
 
                     # hours count in the pass since the creation account for currentime
                     td = timezone.now() - rpwd.updated_at
@@ -750,19 +746,19 @@ class NewPasswordView(View):
 
                     # hash password with bcrypt
                     password_hashed = bcrypt.hashpw(
-                        data.get("password").encode(), bcrypt.gensalt()
+                        str(data.get("password")).encode(), bcrypt.gensalt()
                     )
 
-                    rpwd.user.password = password_hashed.decode()
-                    rpwd.user.updated_at = timezone.now()
-                    rpwd.user.save()
+                    user.password = password_hashed.decode()
+                    user.updated_at = timezone.now()
+                    user.save()
 
                     #  send new code by email
                     send_mail(
                         subject="your password has reset successfully",
                         message="password reset",
                         from_email=os.getenv("SMTP_USER"),
-                        recipient_list=[rpwd.user.email],
+                        recipient_list=[user.email],
                         html_message=f"your password has reset successfully",
                     )
 

@@ -62,7 +62,7 @@ def get_route_name(request: HttpRequest) -> str | None:
     """return the name of current route request
 
     Args:
-        request (HttpRequest): _description_
+        request (HttpRequest)
 
     Returns:
         str | None: the name of route or None if not defined
