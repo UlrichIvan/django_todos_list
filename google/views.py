@@ -1,4 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
 from django.urls import reverse
 from django.views import View
 from django.contrib import messages
@@ -52,5 +53,8 @@ class GoogleAuth(View):
             return HttpResponseRedirect(
                 redirect_to=reverse("todo_list:todo_user_login")
             )
-        except Exception as e:
-            return JsonResponse(str(e), safe=False)
+        except Exception:
+            return render(
+                request,
+                "500.html",
+            )
