@@ -49,7 +49,12 @@
 											<div class="alert alert-success">
 												{{message}}
 											</div>
+										{% elif message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+											<div class="alert alert-info">
+												{{message}}
+											</div>
 										{% endif %}
+
 									{% endfor %}
 								{% endif %}
 								<div class="form-group mb-3">

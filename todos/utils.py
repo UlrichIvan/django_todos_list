@@ -6,6 +6,8 @@ import uuid
 import random
 import os
 
+import requests
+
 PROTECTED_VIEWS = [
     "index",
     "add_todo",
@@ -70,3 +72,45 @@ def get_route_name(request: HttpRequest) -> str | None:
     match = resolve(request.path_info)
     route_name = match.url_name
     return route_name
+
+
+def get_oauth_url(
+    scope: str = "profile email",
+    response_type: str = "code",
+) -> str:
+    url = f"{os.getenv("GOOGLE_OAUTH_URL")}?prompt=select_account&scope={scope}&redirect_uri={os.getenv("GOOGLE_REDIRECT_URL")}&response_type={response_type}&client_id={os.getenv("GOOGLE_CLIENT_ID")}"
+    return url
+
+
+def get_oauth_url_token(code: str) -> str:
+    url = f"{os.getenv("GOOGLE_OAUTH_TOKEN_URL")}?code={code}&redirect_uri={os.getenv("GOOGLE_REDIRECT_URL")}&client_id={os.getenv("GOOGLE_CLIENT_ID")}&client_secret={os.getenv("GOOGLE_CLIENT_SECRET")}&grant_type=authorization_code"
+    return url
+
+
+def get_user_info_url() -> str:
+    return str(os.getenv("GOOGLE_OAUTH_USER_INFO_URL"))
+
+
+def get_oauth_token(code: str) -> Any:
+    res = requests.post(
+        get_oauth_url_token(code=code),
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    if res.status_code == 200:
+        return res.json()
+    else:
+        raise Exception("unable to get token")
+
+
+def get_oauth_user(token: str) -> Any:
+    res = requests.post(
+        get_user_info_url(),
+        headers={
+            "Authorization": token,
+        },
+    )
+
+    if res.status_code == 200:
+        return res.json()
+    else:
+        raise Exception("unable to get user")

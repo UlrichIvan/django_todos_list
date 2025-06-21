@@ -1,4 +1,3 @@
-from typing import Iterable
 from django.utils import timezone
 from django.db import models
 from django.core.validators import RegexValidator
@@ -25,12 +24,17 @@ class UserTodo(models.Model):
         unique=True,
         error_messages={"unique": "email already taken"},
     )
-    password = models.CharField(null=False, blank=False, max_length=128)
-    code = models.CharField(max_length=10, null=False, default=None, unique=True)
+    password = models.CharField(null=True, blank=True, max_length=128)
+    code = models.CharField(
+        max_length=10, null=True, blank=True, default=None, unique=True
+    )
     actived = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(default=None, null=True, blank=True)
+    company = models.CharField(
+        default="internal", null=False, blank=False, max_length=255
+    )
 
 
 class Todo(models.Model):

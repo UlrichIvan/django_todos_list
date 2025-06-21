@@ -1,9 +1,12 @@
 asgiref==3.8.1
 astroid==3.3.9
 bcrypt==4.3.0
+certifi==2025.6.15
+charset-normalizer==3.4.2
 dill==0.4.0
 Django==5.2
 dotenv==0.9.9
+idna==3.10
 isort==6.0.1
 mccabe==0.7.0
 platformdirs==4.3.7
@@ -14,5 +17,7 @@ pylint==3.3.6
 pylint-django==2.6.1
 pylint-plugin-utils==0.8.2
 python-dotenv==1.1.0
+requests==2.32.4
 sqlparse==0.5.3
 tomlkit==0.13.2
+urllib3==2.5.0

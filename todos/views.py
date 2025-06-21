@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.contrib.sessions.models import Session
 from todos.services import get_todos
 from django.forms.models import model_to_dict
-from todos.utils import get_code, get_jwt_token
+from todos.utils import get_code, get_jwt_token, get_oauth_url
 from .models import FactorAuth, ResetPassword, Todo, UserTodo
 from .forms import (
     TodoForm,
@@ -215,7 +215,7 @@ class UserCreate(View):
     context_object_name = "user"
 
     def get(self, request) -> HttpResponse:
-        return render(request, self.template_name)
+        return render(request, self.template_name,{"auth_url":get_oauth_url()})
 
     def post(self, request) -> HttpResponse | None:
 
@@ -454,7 +454,7 @@ class UserLogin(View):
 
                 if user.actived == True and bcrypt.checkpw(
                     data.get("password", "").encode(),
-                    user.password.encode(),
+                    str(user.password).encode(),
                 ):
                     f_auth = UserTodo.objects.get(factorauth__user=user)
                     f_auth.code = get_code()

@@ -5,7 +5,7 @@
     "width": 2000,
     "height": 2000,
     "scrollTop": 0,
-    "scrollLeft": -188,
+    "scrollLeft": 0,
     "zoomLevel": 1,
     "show": 431,
     "database": 16,
@@ -1079,7 +1079,7 @@
       "87PiX-L3_poOdNwD6hC0S": {
         "id": "87PiX-L3_poOdNwD6hC0S",
         "identification": false,
-        "relationshipType": 8,
+        "relationshipType": 2,
         "startRelationshipType": 2,
         "start": {
           "tableId": "Gwwoi2HNdtdbMGAUT2N5Q",
@@ -1100,7 +1100,7 @@
           "direction": 4
         },
         "meta": {
-          "updateAt": 1745394922311,
+          "updateAt": 1750527756466,
           "createAt": 1745394922311
         }
       },
