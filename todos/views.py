@@ -155,9 +155,10 @@ class EditTodo(View):
         user_name = request.user_todo.get("user_name")
         if edit_form.is_valid():
             data = edit_form.cleaned_data
+            done= True if request.POST.get("done")=='on' else False
             todo.title = data.get("title", todo.title)
             todo.content = data.get("content", todo.content)
-            todo.done = data.get("done", todo.done)
+            todo.done = data.get("done", done)
             todo.updated_at = timezone.now()
             todo.expired_at = data.get("expired_at", todo.expired_at)
             todo.save()
@@ -215,7 +216,7 @@ class UserCreate(View):
     context_object_name = "user"
 
     def get(self, request) -> HttpResponse:
-        return render(request, self.template_name,{"auth_url":get_oauth_url()})
+        return render(request, self.template_name, {"auth_url": get_oauth_url()})
 
     def post(self, request) -> HttpResponse | None:
 
@@ -442,7 +443,7 @@ class UserLogin(View):
     model = UserTodo
 
     def get(self, request) -> HttpResponse:
-        return render(request, self.template_name)
+        return render(request, self.template_name, {"auth_url": get_oauth_url()})
 
     def post(self, request) -> HttpResponse | None:
         login_form = UserLoginForm(request.POST)
@@ -557,7 +558,7 @@ class UserFactAuth(View):
                         message=f"new connection",
                         from_email=os.getenv("SMTP_USER"),
                         recipient_list=[user.email],
-                        html_message=f"Dear <b>{user.last_name}</b>, your have a new connection on your Account",
+                        html_message=f"Dear <b>{user.last_name}</b>, you have a new connection on your Account",
                     )
 
                     return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))

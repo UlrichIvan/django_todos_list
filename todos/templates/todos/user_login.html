@@ -67,7 +67,10 @@
 									<input required type="password" name="password" value="{{user.password.value}}" id="password" class="form-control" autocomplete="off" placeholder="your password account"/>
 								</div>
 
-								<input required class="btn btn-primary w-100" type="submit" value="login">
+								<input required class="btn btn-primary w-100 my-4" type="submit" value="login">
+								<a href="{{auth_url}}" class="btn btn-outline-primary text-capitalize w-100">
+									login with google <img src="{% static "todos/images/google.png" %}" width=30 alt="Google">
+								</a>
 								<a class="mt-2 text-start w-100 d-block" href="{% url 'todo_list:todo_user_account' %}">
 									You don't have account ? create it
 								</a>
