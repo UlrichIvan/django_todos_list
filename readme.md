@@ -22,13 +22,19 @@
 
 - Responsive application
 
+- Google OAuth2.0
+
 ## Setup environment and use application
 
-- setup your google account to allow it to send email see this link to do that : https://myaccount.google.com/apppasswords. <br>
+- Setup your google account to allow it to send email see this link to do that : https://myaccount.google.com/apppasswords. <br>
   When you arrive on the link page your must create one application(todo_app for exemple) to get the `secret key` that you will use to send mail with google in your application.<br> This step is required to use application correctly.<br><br>
   **Very Important** : you must activate 2-step validation to use setup password application of google. for more information read this [help](https://support.google.com/mail/answer/185833?sjid=11845357661678490645-EU) on the section : `Create & use app passwords`
+  
+- Create client OAuth in [google cloud](https://cloud.google.com/) and get your `<client_id>`,`<client_secret>` and your `<redirect_uri>`.
 
-- After setup google account,create virtual env in the root of your project:
+   **Very Important** : you must create your OAuth client to use OAuth into application, otherwise application will not work for OAuth2.0 functionality.
+
+- After setup google account and create OAuth client into [google cloud](https://cloud.google.com/) ,create virtual env in the root of your project:
 
 ```cmd
    python -m venv .venv

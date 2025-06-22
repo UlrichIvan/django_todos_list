@@ -35,8 +35,9 @@ class UserTodo(models.Model):
     company = models.CharField(
         default="internal", null=False, blank=False, max_length=255
     )
+    photo = models.URLField(null=True, blank=True, default=None, max_length=255)
 
-
+    
 class Todo(models.Model):
     id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     title = models.CharField(

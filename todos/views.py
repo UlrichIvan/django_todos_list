@@ -52,6 +52,7 @@ class TodosListView(View):
                         "todos_not_done": t_not_done,
                     },
                     "user_name": user_todo.get("user_name"),
+                    "photo": user_todo.get("photo"),
                 },
             )
         except Exception as e:
@@ -70,7 +71,11 @@ class AddTodo(View):
         return render(
             request,
             self.template_name,
-            {"form_todo": form_todo, "user_name": request.user_todo.get("user_name")},
+            {
+                "form_todo": form_todo,
+                "user_name": request.user_todo.get("user_name"),
+                "photo": request.user_todo.get("photo"),
+            },
         )
 
     def post(self, request) -> HttpResponse | None:
@@ -89,7 +94,10 @@ class AddTodo(View):
                 return render(
                     request,
                     self.template_name,
-                    {"user_name": request.user_todo.get("user_name")},
+                    {
+                        "user_name": request.user_todo.get("user_name"),
+                        "photo": request.user_todo.get("photo"),
+                    },
                 )
 
             messages.error(
@@ -104,6 +112,7 @@ class AddTodo(View):
                     "errors": todo_form.errors,
                     "todo": todo_form,
                     "user_name": request.user_todo.get("user_name"),
+                    "photo": request.user_todo.get("photo"),
                 },
             )
 
@@ -120,6 +129,7 @@ class AddTodo(View):
                     "errors": todo_form.errors,
                     "todo": todo_form,
                     "user_name": request.user_todo.get("user_name"),
+                    "photo": request.user_todo.get("photo"),
                 },
             )
 
@@ -143,6 +153,7 @@ class EditTodo(View):
                     "expired_at": todo.get_expired(),
                 },
                 "user_name": user_todo.get("user_name"),
+                "photo": request.user_todo.get("photo"),
             },
         )
 
@@ -152,10 +163,9 @@ class EditTodo(View):
 
         edit_form = TodoForm(request.POST)
 
-        user_name = request.user_todo.get("user_name")
         if edit_form.is_valid():
             data = edit_form.cleaned_data
-            done= True if request.POST.get("done")=='on' else False
+            done = True if request.POST.get("done") == "on" else False
             todo.title = data.get("title", todo.title)
             todo.content = data.get("content", todo.content)
             todo.done = data.get("done", done)
@@ -174,7 +184,8 @@ class EditTodo(View):
                     "id": id,
                     "expired_at": todo.get_expired(),
                 },
-                "user_name": user_name,
+                "user_name": request.user_todo.get("user_name"),
+                "photo": request.user_todo.get("photo"),
             },
         )
 
@@ -464,7 +475,7 @@ class UserLogin(View):
                     # send email
                     send_mail(
                         subject="check your authentication",
-                        message=f"new authentication on your account",
+                        message="new authentication on your account",
                         from_email=os.getenv("SMTP_USER"),
                         recipient_list=[user.email],
                         html_message=f"Use this code <b>{f_auth.code}</b>, to valid your authentication.",
@@ -548,6 +559,7 @@ class UserFactAuth(View):
                             "is_auth": True,
                             "user_id": str(user.id),
                             "user_name": user.last_name,
+                            "photo": user.photo,
                             "exp": datetime.datetime.now()
                             + datetime.timedelta(days=365),
                         }
