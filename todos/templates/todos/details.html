@@ -21,9 +21,12 @@
 </style>
 {% endblock %} {% block body %}
 <div class="container-fluid text-black text-capitalize px-0">
-  {% if photo %} {% with user_photo=photo|stringformat:"s" %} {% include
-  "./navbar.html" with photo=""|add:user_photo %} {% endwith %} {% else %} {%
-  include "./navbar.html" with title="Todo Details" %} {% endif %}
+  {% if photo %} {% with user_photo=photo|stringformat:"s" %} 
+    {% include "./navbar.html" with photo=""|add:user_photo %} 
+  {% endwith %} 
+  {% else %} 
+    {% include "./navbar.html" with title="Todo Details" %} 
+  {% endif %}
   <div class="form-wrapper d-flex align-items-center justify-content-center">
     <div class="container-wrapper mx-4 py-3 w-100">
       <div class="container">
