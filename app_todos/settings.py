@@ -128,3 +128,8 @@ STATIC_URL = "static/"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+MEDIA_URL = "/avatars/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "avatars")
+
+MAX_UPLOAD_SIZE_MB=2

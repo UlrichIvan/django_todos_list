@@ -8,20 +8,22 @@
 		<span class="text-capitalize text-white brand-name">{{title|default:"Todos list"}}</span>
 	</div>
 	<ul class="nav-bar-actions list-unstyled d-flex align-items-center mb-0">
-		{% if photo %}
-			<li class="nav-item logout mx-2" title="{{user_name|upper}}">
-				<span>
-					<img src="{{photo}}" width=40 alt="user image" class="img-fluid rounded-circle"/>
-				</span>
-			</li>
-		{% elif user_name %}
-			<li class="nav-item logout mx-2" title="{{user_name|upper}}">
-				<span class="btn border border-0 btn-danger fw-bolder rounded-circle user-name">
-					{{user_name|make_list|first}}
-				</span>
-			</li>
-		{% endif %}
-
+		<li class="nav-item logout mx-2 position-relative">
+			<span {% if user.photo %} {% else %} class="btn border border-0 btn-danger fw-bolder rounded-circle user-name" {% endif %}>
+				{% if user.photo %}
+						<img src="{{user.photo}}" width=40 alt="user image" title="{{user.user_name|upper}}" class="img-fluid rounded-circle"/>
+				{% else %}
+				   {{user.user_name|make_list|first}}
+				{% endif %}
+			</span>
+			{% if user.is_profile %}
+			{% else %}
+				<a href="{% url 'todo_list:user_profile' user.user_id %}">
+					<img class="position-absolute settings-logo" title="settings" width=20 src="{% static "todos/images/settings.png" %}" alt="settings"/>
+				</a>
+			{% endif %}
+			
+		</li>
 		<li class="nav-item logout mx-2" title="logout">
 			<a class="btn btn-outline-success fw-bolder" href="{% url 'todo_list:logout' %}">
 				log out

@@ -14,6 +14,7 @@ PROTECTED_VIEWS = [
     "edit_todo",
     "details_todo",
     "delete_todo",
+    "user_profile",
 ]
 
 EXCLUDED_VIEWS = ["logout"]

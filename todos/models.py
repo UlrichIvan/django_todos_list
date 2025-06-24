@@ -2,6 +2,11 @@ from django.utils import timezone
 from django.db import models
 from django.core.validators import RegexValidator
 import uuid
+import mimetypes
+
+import magic
+
+from todos.validators import validate_file_size, validate_image_mime_type
 
 
 class UserTodo(models.Model):
@@ -37,7 +42,33 @@ class UserTodo(models.Model):
     )
     photo = models.URLField(null=True, blank=True, default=None, max_length=255)
 
-    
+
+def set_profil_dir(user_avatar, _: str) -> str:
+    try:
+        user_avatar.avatar.seek(0)
+        buffer = user_avatar.avatar.read(1024)
+        user_avatar.avatar.seek(0)
+        mime_type = magic.from_buffer(buffer, mime=True)
+        ext = mime_type.split("/")[1]
+        return f"_{user_avatar.id}/{str(uuid.uuid4())}.{ext}"
+    except:
+        raise Exception("Error occured!")
+
+
+class UserAvatar(models.Model):
+    id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
+    user = models.OneToOneField(to=UserTodo, unique=True, on_delete=models.CASCADE)
+    height = models.PositiveIntegerField(default=150)
+    width = models.PositiveIntegerField(default=150)
+    avatar = models.ImageField(
+        upload_to=set_profil_dir,
+        max_length=255,
+        height_field="height",
+        width_field="width",
+        validators=[validate_image_mime_type, validate_file_size],
+    )
+
+
 class Todo(models.Model):
     id = models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True)
     title = models.CharField(

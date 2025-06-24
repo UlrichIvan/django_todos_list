@@ -1,0 +1,52 @@
+{% extends "../base.html" %} {% load static %} {% block css %}
+<style>
+  nav {
+    height: 63px;
+    max-height: 63px;
+  }
+  .todos-list {
+    height: calc(100vh - 63px);
+    max-height: calc(100vh - 63px);
+    overflow-y: auto;
+  }
+  #id_avatar_error > li {
+    list-style: none;
+    color: rgb(217, 52, 68);
+  }
+  #id_avatar_error {
+    padding: 0;
+  }
+</style>
+{% endblock %} {% block body %}
+<div class="container-fluid text-white text-capitalize px-0">
+  {% include "./navbar.html" with title="user profile" user=user %}
+  <div class="container-fluid">
+    <div
+      class="todos-list d-flex justify-content-center align-items-center text-black"
+    >
+      <form class="form" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <div class="avatar profile d-flex justify-content-center">
+            <img
+              width="200"
+              src="{% static 'todos/images/avatar.png' %}"
+              alt="Your current profile"
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="avatar" class="form-label d-block btn btn-outline-primary"
+            >select your profile</label
+          >
+          {{errors.avatar}}
+          <input type="file" name="avatar" id="avatar" class="d-none" />
+        </div>
+        <button type="submit" class="btn btn-primary text-capitalize w-100">
+          Save your profile
+        </button>
+        {% csrf_token %}
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

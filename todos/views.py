@@ -1,7 +1,9 @@
 import datetime
+from typing import Any
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.views import View
+from django.views.generic import UpdateView
 from django.views.generic.detail import DetailView
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ValidationError
@@ -13,11 +15,11 @@ from django.contrib.sessions.models import Session
 from todos.services import get_todos
 from django.forms.models import model_to_dict
 from todos.utils import get_code, get_jwt_token, get_oauth_url
-from .models import FactorAuth, ResetPassword, Todo, UserTodo
+from .models import FactorAuth, ResetPassword, Todo, UserAvatar, UserTodo
 from .forms import (
     TodoForm,
-    EditTodoForm,
     UserActivationForm,
+    UserAvatarForm,
     UserFactAuthForm,
     UserForm,
     UserLoginForm,
@@ -51,11 +53,11 @@ class TodosListView(View):
                         "todos_done": t_done,
                         "todos_not_done": t_not_done,
                     },
-                    "user_name": user_todo.get("user_name"),
-                    "photo": user_todo.get("photo"),
+                    "user": user_todo,
                 },
             )
         except Exception as e:
+            print(e)
             return render(
                 request,
                 "500.html",
@@ -67,15 +69,12 @@ class AddTodo(View):
     template_name = "todos/add_todo.html"
 
     def get(self, request) -> HttpResponse:
+        user_todo: dict = getattr(request, "user_todo")
         form_todo = TodoForm()
         return render(
             request,
             self.template_name,
-            {
-                "form_todo": form_todo,
-                "user_name": request.user_todo.get("user_name"),
-                "photo": request.user_todo.get("photo"),
-            },
+            {"form_todo": form_todo, "user": user_todo},
         )
 
     def post(self, request) -> HttpResponse | None:
@@ -94,10 +93,7 @@ class AddTodo(View):
                 return render(
                     request,
                     self.template_name,
-                    {
-                        "user_name": request.user_todo.get("user_name"),
-                        "photo": request.user_todo.get("photo"),
-                    },
+                    {"user": user_todo},
                 )
 
             messages.error(
@@ -108,12 +104,7 @@ class AddTodo(View):
             return render(
                 request,
                 self.template_name,
-                {
-                    "errors": todo_form.errors,
-                    "todo": todo_form,
-                    "user_name": request.user_todo.get("user_name"),
-                    "photo": request.user_todo.get("photo"),
-                },
+                {"errors": todo_form.errors, "todo": todo_form, "user": user_todo},
             )
 
         except (ValidationError, Exception):
@@ -125,12 +116,7 @@ class AddTodo(View):
             return render(
                 request,
                 self.template_name,
-                {
-                    "errors": todo_form.errors,
-                    "todo": todo_form,
-                    "user_name": request.user_todo.get("user_name"),
-                    "photo": request.user_todo.get("photo"),
-                },
+                {"errors": todo_form.errors, "todo": todo_form, "user": user_todo},
             )
 
 
@@ -152,8 +138,7 @@ class EditTodo(View):
                     "id": id,
                     "expired_at": todo.get_expired(),
                 },
-                "user_name": user_todo.get("user_name"),
-                "photo": request.user_todo.get("photo"),
+                "user": user_todo,
             },
         )
 
@@ -184,8 +169,7 @@ class EditTodo(View):
                     "id": id,
                     "expired_at": todo.get_expired(),
                 },
-                "user_name": request.user_todo.get("user_name"),
-                "photo": request.user_todo.get("photo"),
+                "user": request.user_todo,
             },
         )
 
@@ -212,7 +196,7 @@ class TodoDelete(View):
         return render(
             request,
             self.template_name,
-            {"todo": todo, "user_name": user_todo.get("user_name")},
+            {"todo": todo, "user": user_todo},
         )
 
     def post(self, _, id) -> HttpResponse | None:
@@ -822,4 +806,54 @@ class LogOut(View):
         except (Session.DoesNotExist, Exception):
             return HttpResponseRedirect(
                 redirect_to=reverse("todo_list:todo_user_login")
+            )
+
+
+class UserTodoUpdateView(View):
+    template_name = "todos/profile.html"
+
+    def get(self, request, pk):
+        try:
+            user_todo: dict = getattr(request, "user_todo")
+            UserTodo.objects.get(id=pk)
+            return render(
+                request,
+                self.template_name,
+                {"user": {**user_todo, "is_profile": True}},
+            )
+        except:
+            return render(
+                request,
+                "500.html",
+            )
+
+    def post(self, request: HttpRequest, pk):
+        try:
+            avatarForm = UserAvatarForm(request.POST, request.FILES)
+            user_todo: dict = getattr(request, "user_todo")
+            if avatarForm.is_valid():
+                try:
+                    user_avatar = UserAvatar.objects.get(user__id=pk)
+                    data = avatarForm.cleaned_data
+                    setattr(user_avatar,"avatar",data.get("avatar"))
+                    user_avatar.save()
+                    return HttpResponseRedirect(reverse("todo_list:index"))
+                except UserAvatar.DoesNotExist:
+                    user = UserTodo.objects.get(id=pk)
+                    data = avatarForm.cleaned_data
+                    avatar = UserAvatar(avatar=data.get("avatar"), user=user)
+                    avatar.save()
+                    return HttpResponseRedirect(reverse("todo_list:index"))
+            return render(
+                request,
+                self.template_name,
+                {
+                    "user": {**user_todo, "is_profile": True},
+                    "errors": avatarForm.errors,
+                },
+            )
+        except Exception as e:
+            return render(
+                request,
+                "500.html",
             )

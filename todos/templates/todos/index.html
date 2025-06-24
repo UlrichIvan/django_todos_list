@@ -28,13 +28,7 @@
 </style>
 {% endblock %} {% block body %}
 <div class="container-fluid text-white text-capitalize px-0">
-	{% if photo %}
-		{% with user_photo=photo|stringformat:"s" %}
-			{% include "./navbar.html" with photo=""|add:user_photo %}
-		{% endwith %}
-	{% else %}
-	   		{% include "./navbar.html" with title="Todo List" %}
-	{% endif %}
+  {% include "./navbar.html" with  title="Todo List" user=user %}
   <div class="todos-list d-flex justify-content-center text-black">
     {% if todos %}
     <div class="container-fluid">
@@ -182,7 +176,6 @@
         </div>
       </div>
     </div>
-
     {% endif %}
   </div>
 </div>

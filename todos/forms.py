@@ -1,7 +1,8 @@
 import re
+from django import forms
 from django.forms import ModelForm
-
-from .models import Todo, UserTodo, FactorAuth
+from django.db import models
+from .models import Todo, UserAvatar, UserTodo, FactorAuth
 
 
 class TodoForm(ModelForm):
@@ -17,7 +18,6 @@ class EditTodoForm(ModelForm):
 
 
 class UserForm(ModelForm):
-
     class Meta:
         model = UserTodo
         fields = ["first_name", "last_name", "email", "password"]
@@ -36,6 +36,12 @@ class UserForm(ModelForm):
             super().is_valid()
             return False
         return super().is_valid()
+
+class UserAvatarForm(ModelForm):
+    
+    class Meta:
+        model = UserAvatar
+        fields = ["avatar"]
 
 
 class UserNewPasswordForm(ModelForm):
