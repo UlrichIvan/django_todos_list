@@ -521,6 +521,7 @@ class UserFactAuth(View):
                         request,
                         self.template_name,
                         {"errors": {"user_message": "your code is mistake"}},
+                        status=401,
                     )
                 elif user and user.actived == True:
                     # hours count in the pass since the creation account for currentime
@@ -537,6 +538,7 @@ class UserFactAuth(View):
                                     "user_message": "your code have been expired."
                                 }
                             },
+                            status=401,
                         )
 
                     user_fact_auth.save()
@@ -582,6 +584,7 @@ class UserFactAuth(View):
                     request,
                     self.template_name,
                     {"errors": {"user_message": "invalid code authentication"}},
+                    status=401,
                 )
 
             except Exception:
@@ -593,6 +596,7 @@ class UserFactAuth(View):
                             "user_message": "error occured, please try again later"
                         }
                     },
+                    status=500,
                 )
 
         else:
@@ -600,6 +604,7 @@ class UserFactAuth(View):
                 request,
                 self.template_name,
                 {"errors": {"user_message": "invalid code activation"}},
+                status=401,
             )
 
 

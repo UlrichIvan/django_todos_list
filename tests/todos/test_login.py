@@ -50,7 +50,7 @@ class LoginTest(TestCase):
         )
         self.assertEqual(res.status_code, 302)
         self.assertRedirects(res, expected_url=reverse("todo_list:todo_user_fact_auth"))
-        
+
         # Bad credentials with unauthorization
         res = self.client.post(
             path=reverse("todo_list:todo_user_login"),
@@ -58,10 +58,85 @@ class LoginTest(TestCase):
         )
         self.assertEqual(res.status_code, 401)
 
-        # error server
+        #  server error
         self.user.delete()
         res = self.client.post(
             path=reverse("todo_list:todo_user_login"),
             data={**self.login_credentials, "password": "testazertyab"},
         )
         self.assertEqual(res.status_code, 501)
+
+
+class FactAuthTest(TestCase):
+
+    def setUp(self) -> None:
+        self.client = Client()
+        self.login_credentials = {"code": "E193DA1F3"}
+        self.password = "testazertyaa"
+        self.user_form = {
+            "first_name": "test1",
+            "last_name": "test2",
+            "email": "ab@gmail.com",
+            "actived": True,
+        }
+
+        return super().setUp()
+
+    def test_get_method(self):
+        res = self.client.get(path=reverse("todo_list:todo_user_fact_auth"))
+        self.assertEqual(res.status_code, 200)
+
+    def test_user_fact_auth_pass(self):
+        self.user = UserTodo(
+            **self.user_form,
+            password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
+        )
+        self.user.save()
+        self.user_factor = FactorAuth(
+            user=self.user, code=self.login_credentials["code"]
+        )
+        self.user_factor.save()
+
+        # Good credentials with redirection
+        res = self.client.post(
+            path=reverse("todo_list:todo_user_fact_auth"),
+            data=self.login_credentials,
+        )
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, expected_url=reverse("todo_list:index"))
+
+    def test_user_fact_auth_bad_code(self):
+        # bad code verification
+        self.user = UserTodo(
+            **self.user_form,
+            password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
+        )
+        self.user.save()
+        self.user_factor = FactorAuth(
+            user=self.user, code=self.login_credentials["code"]
+        )
+        self.user_factor.save()
+
+        res = self.client.post(
+            path=reverse("todo_list:todo_user_fact_auth"), data={"code": "E193DA1FZ"}
+        )
+        self.assertEqual(res.status_code, 401)
+
+    def test_user_fact_auth_account_not_actived(self):
+        # bad code verification
+        self.user_form["actived"] = False
+        self.user = UserTodo(
+            **self.user_form,
+            password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
+        )
+        self.user.save()
+        self.user_factor = FactorAuth(
+            user=self.user, code=self.login_credentials["code"]
+        )
+        self.user_factor.save()
+
+        res = self.client.post(
+            path=reverse("todo_list:todo_user_fact_auth"),
+            data=self.login_credentials,
+        )
+        self.assertEqual(res.status_code, 401)
