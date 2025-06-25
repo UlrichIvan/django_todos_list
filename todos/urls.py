@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views import (
     LogOut,
     TodosListView,
@@ -14,12 +15,14 @@ from .views import (
     UserNewCodeFactor,
     ResetPasswordView,
     NewPasswordView,
-    UserTodoUpdateView,
+    UserTodoUpdateAvatarView,
+    redirect_to_todos_list,
 )
 
 app_name = "todo_list"
 urlpatterns = [
-    path("", TodosListView.as_view(), name="index"),
+    path("", redirect_to_todos_list, name="init"),
+    path("list", TodosListView.as_view(), name="index"),
     path("add", AddTodo.as_view(), name="add_todo"),
     path("edit/<uuid:id>", EditTodo.as_view(), name="edit_todo"),
     path("details/<uuid:pk>", TodoDetails.as_view(), name="details_todo"),
@@ -43,5 +46,5 @@ urlpatterns = [
     ),
     path("newpassword", NewPasswordView.as_view(), name="todo_user_new_password"),
     path("logout", LogOut.as_view(), name="logout"),
-    path("user/<uuid:pk>/profile", UserTodoUpdateView.as_view(), name="user_profile"),
+    path("user/<uuid:pk>/profile", UserTodoUpdateAvatarView.as_view(), name="user_profile"),
 ]

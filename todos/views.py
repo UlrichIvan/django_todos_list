@@ -30,6 +30,10 @@ import os
 import bcrypt
 
 
+def redirect_to_todos_list(_):
+    return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
+
+
 class TodosListView(View):
     template_name = "todos/index.html"
 
@@ -57,7 +61,6 @@ class TodosListView(View):
                 },
             )
         except Exception as e:
-            print(e)
             return render(
                 request,
                 "500.html",
@@ -182,7 +185,7 @@ class TodoDetails(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_todo: dict = getattr(self.request, "user_todo")
-        context["user_name"] = user_todo.get("user_name")
+        context["user"] = user_todo
         return context
 
 
@@ -193,6 +196,7 @@ class TodoDelete(View):
     def get(self, request, id) -> HttpResponse:
         todo = get_object_or_404(Todo, pk=id)
         user_todo = request.user_todo
+        print(user_todo)
         return render(
             request,
             self.template_name,
@@ -536,18 +540,35 @@ class UserFactAuth(View):
                                 }
                             },
                         )
+
                     user_fact_auth.save()
 
-                    request.session["token"] = get_jwt_token(
-                        payload={
-                            "is_auth": True,
-                            "user_id": str(user.id),
-                            "user_name": user.last_name,
-                            "photo": user.photo,
-                            "exp": datetime.datetime.now()
-                            + datetime.timedelta(days=365),
-                        }
-                    )
+                    try:
+                        user_avatar = UserAvatar.objects.get(user=user)
+                        request.session["token"] = get_jwt_token(
+                            payload={
+                                "is_auth": True,
+                                "user_id": str(user.id),
+                                "user_name": user.last_name,
+                                "photo": user_avatar.avatar.url,
+                                "iat": datetime.datetime.now(),
+                                "exp": datetime.datetime.now()
+                                + datetime.timedelta(days=365),
+                            }
+                        )
+                    except UserAvatar.DoesNotExist:
+                        request.session["token"] = get_jwt_token(
+                            payload={
+                                "is_auth": True,
+                                "user_id": str(user.id),
+                                "user_name": user.last_name,
+                                "iat": datetime.datetime.now(),
+                                "photo": user.photo,
+                                "exp": datetime.datetime.now()
+                                + datetime.timedelta(days=365),
+                            }
+                        )
+
                     # send email
                     send_mail(
                         subject="new connection on your account",
@@ -809,7 +830,7 @@ class LogOut(View):
             )
 
 
-class UserTodoUpdateView(View):
+class UserTodoUpdateAvatarView(View):
     template_name = "todos/profile.html"
 
     def get(self, request, pk):
@@ -831,18 +852,41 @@ class UserTodoUpdateView(View):
         try:
             avatarForm = UserAvatarForm(request.POST, request.FILES)
             user_todo: dict = getattr(request, "user_todo")
+            iat = user_todo.get("iat", 0)
+            exp = user_todo.get("exp")
+            dead_life = exp - (datetime.datetime.now().timestamp() - iat)
             if avatarForm.is_valid():
                 try:
                     user_avatar = UserAvatar.objects.get(user__id=pk)
                     data = avatarForm.cleaned_data
-                    setattr(user_avatar,"avatar",data.get("avatar"))
+                    setattr(user_avatar, "avatar", data.get("avatar"))
                     user_avatar.save()
+                    request.session["token"] = get_jwt_token(
+                        payload={
+                            "is_auth": True,
+                            "user_id": str(user_avatar.user.id),
+                            "user_name": user_avatar.user.last_name,
+                            "photo": user_avatar.avatar.url,
+                            "iat": datetime.datetime.now(),
+                            "exp": dead_life,
+                        }
+                    )
                     return HttpResponseRedirect(reverse("todo_list:index"))
                 except UserAvatar.DoesNotExist:
                     user = UserTodo.objects.get(id=pk)
                     data = avatarForm.cleaned_data
                     avatar = UserAvatar(avatar=data.get("avatar"), user=user)
                     avatar.save()
+                    request.session["token"] = get_jwt_token(
+                        payload={
+                            "is_auth": True,
+                            "user_id": str(user_avatar.user.id),
+                            "user_name": user_avatar.user.last_name,
+                            "photo": user_avatar.avatar.url,
+                            "iat": datetime.datetime.now(),
+                            "exp": dead_life,
+                        }
+                    )
                     return HttpResponseRedirect(reverse("todo_list:index"))
             return render(
                 request,

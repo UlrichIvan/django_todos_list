@@ -52,10 +52,10 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "todos.middleware.AuthMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "todos.middleware.AuthMiddleware",
 ]
 
 ROOT_URLCONF = "app_todos.urls"
@@ -132,4 +132,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_URL = "/avatars/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "avatars")
 
-MAX_UPLOAD_SIZE_MB=2
+MAX_UPLOAD_SIZE_MB = 2

@@ -12,4 +12,4 @@ def not_found(request, _):
 
 
 def interval_error(request):
-    return render(request, "500.html", us=500)
+    return render(request, "500.html", status=500)

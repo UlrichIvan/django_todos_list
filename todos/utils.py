@@ -8,19 +8,20 @@ import os
 
 import requests
 
-PROTECTED_VIEWS = [
-    "index",
-    "add_todo",
-    "edit_todo",
-    "details_todo",
-    "delete_todo",
-    "user_profile",
-]
+PROTECTED_VIEWS = (
+    "/todos/list",
+    "/todos/add",
+    "/todos/edit/",
+    "/todos/details/",
+    "/todos/delete/",
+    "/todos/logout",
+    "/todos/user/",
+    "/avatars/",
+    "/todos/logout",
+)
 
-EXCLUDED_VIEWS = ["logout"]
 
-
-def token_verify(token: str) -> Any:
+def token_verify(token: str) -> Any | bool:
     """secode token of user
 
     Args:
@@ -59,20 +60,6 @@ def get_jwt_token(payload: dict) -> str:
         str: token generated
     """
     return jwt.encode(payload, os.getenv("JWT_KEY"), algorithm=os.getenv("JWT_ALGO"))
-
-
-def get_route_name(request: HttpRequest) -> str | None:
-    """return the name of current route request
-
-    Args:
-        request (HttpRequest)
-
-    Returns:
-        str | None: the name of route or None if not defined
-    """
-    match = resolve(request.path_info)
-    route_name = match.url_name
-    return route_name
 
 
 def get_oauth_url(

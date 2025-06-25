@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.views import View
 from django.contrib import messages
 from django.core.mail import send_mail
-from todos.models import UserTodo
+from todos.models import UserAvatar, UserTodo
 from todos.utils import (
     get_jwt_token,
     get_oauth_token,
@@ -27,15 +27,32 @@ class GoogleAuth(View):
             u = UserTodo.objects.get(email=result.get("email"))
 
             if u and u.actived == True and result.get("email_verified") == True:
-                request.session["token"] = get_jwt_token(
-                    payload={
-                        "is_auth": True,
-                        "user_id": str(u.id),
-                        "user_name": u.last_name,
-                        "photo": u.photo,
-                        "exp": datetime.datetime.now() + datetime.timedelta(days=365),
-                    }
-                )
+                try:
+                    user_avatar = UserAvatar.objects.get(user=u)
+                    request.session["token"] = get_jwt_token(
+                        payload={
+                            "is_auth": True,
+                            "user_id": str(u.id),
+                            "user_name": u.last_name,
+                            "photo": user_avatar.avatar.url,
+                            "iat": datetime.datetime.now(),
+                            "exp": datetime.datetime.now()
+                            + datetime.timedelta(days=365),
+                        }
+                    )
+                except UserAvatar.DoesNotExist:
+                    request.session["token"] = get_jwt_token(
+                        payload={
+                            "is_auth": True,
+                            "user_id": str(u.id),
+                            "user_name": u.last_name,
+                            "iat": datetime.datetime.now(),
+                            "photo": u.photo,
+                            "exp": datetime.datetime.now()
+                            + datetime.timedelta(days=365),
+                        }
+                    )
+
                 # send email
                 send_mail(
                     subject="new connection on your account",
