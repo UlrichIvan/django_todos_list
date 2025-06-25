@@ -1,9 +1,7 @@
 import datetime
-from typing import Any
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.views import View
-from django.views.generic import UpdateView
 from django.views.generic.detail import DetailView
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ValidationError
@@ -12,7 +10,6 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.contrib.sessions.models import Session
-from todos.services import get_todos
 from django.forms.models import model_to_dict
 from todos.utils import get_code, get_jwt_token, get_oauth_url
 from .models import FactorAuth, ResetPassword, Todo, UserAvatar, UserTodo
@@ -446,14 +443,12 @@ class UserLogin(View):
 
     def post(self, request) -> HttpResponse | None:
         login_form = UserLoginForm(request.POST)
-
         try:
             if login_form.is_valid():
                 data = login_form.cleaned_data
                 user = UserTodo.objects.get(email=data.get("email"))
-
                 if user.actived == True and bcrypt.checkpw(
-                    data.get("password", "").encode(),
+                    str(data.get("password")).encode(),
                     str(user.password).encode(),
                 ):
                     f_auth = UserTodo.objects.get(factorauth__user=user)
@@ -482,18 +477,21 @@ class UserLogin(View):
                     return render(
                         request,
                         self.template_name,
+                        status=401,
                     )
             else:
                 return render(
                     request,
                     self.template_name,
                     {"errors": {"user_message": "invalid email or password"}},
+                    status=401,
                 )
         except Exception as _:
             return render(
                 request,
                 self.template_name,
                 {"errors": {"user_message": "an error occured please try again!"}},
+                status=501,
             )
 
 
