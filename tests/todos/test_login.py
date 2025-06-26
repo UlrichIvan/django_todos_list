@@ -159,7 +159,7 @@ class UserNewCodeFactorTest(TestCase):
         res = self.client.get(path=reverse("todo_list:todo_user_new_code"))
         self.assertEqual(res.status_code, 200)
 
-    def test_new_code_auth(self):
+    def test_new_code_auth_pass(self):
         self.user = UserTodo(
             **self.user_form,
             password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
@@ -176,20 +176,73 @@ class UserNewCodeFactorTest(TestCase):
         self.assertEqual(res.status_code, 302)
         self.assertRedirects(res, expected_url=reverse("todo_list:todo_user_fact_auth"))
 
+    def test_new_code_auth_fail(self):
+        self.user_form["actived"] = False
+        self.user = UserTodo(
+            **self.user_form,
+            password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
+        )
+        self.user.save()
+        self.user_factor = FactorAuth(user=self.user)
+        self.user_factor.save()
 
-def test_new_code_auth(self):
-    self.user_form["actived"] = False
-    self.user = UserTodo(
-        **self.user_form,
-        password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
-    )
-    self.user.save()
-    self.user_factor = FactorAuth(user=self.user)
-    self.user_factor.save()
+        # Good credentials with redirection
+        res = self.client.post(
+            path=reverse("todo_list:todo_user_new_code_fact_auth"),
+            data={"email": self.user_form["email"]},
+        )
+        self.assertEqual(res.status_code, 401)
 
-    # Good credentials with redirection
-    res = self.client.post(
-        path=reverse("todo_list:todo_user_new_code_fact_auth"),
-        data={"email": self.user_form["email"]},
-    )
-    self.assertEqual(res.status_code, 401)
+
+class UserNewCodeTest(TestCase):
+    def setUp(self) -> None:
+        self.client = Client()
+        self.password = "testazertyaa"
+        self.user_form = {
+            "first_name": "test1",
+            "last_name": "test2",
+            "email": "ab@gmail.com",
+            "actived": False,
+        }
+
+        return super().setUp()
+
+    def test_get_method(self):
+        res = self.client.get(path=reverse("todo_list:todo_user_new_code"))
+        self.assertEqual(res.status_code, 200)
+
+    def test_new_code_activation_pass(self):
+        self.user = UserTodo(
+            **self.user_form,
+            password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
+        )
+        self.user.save()
+        self.user_factor = FactorAuth(user=self.user)
+        self.user_factor.save()
+
+        # Good credentials with redirection
+        res = self.client.post(
+            path=reverse("todo_list:todo_user_new_code"),
+            data={"email": self.user_form["email"]},
+        )
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(
+            res, expected_url=reverse("todo_list:todo_user_active_account")
+        )
+
+    def test_new_code_activation_fail(self):
+        self.user_form["actived"] = True
+        self.user = UserTodo(
+            **self.user_form,
+            password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
+        )
+        self.user.save()
+        self.user_factor = FactorAuth(user=self.user)
+        self.user_factor.save()
+
+        # Good credentials with redirection
+        res = self.client.post(
+            path=reverse("todo_list:todo_user_new_code"),
+            data={"email": self.user_form["email"]},
+        )
+        self.assertEqual(res.status_code, 401)

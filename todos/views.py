@@ -412,24 +412,28 @@ class UserNewCode(View):
                     request,
                     self.template_name,
                     {"errors": {"user_message": "unable to activate your account"}},
+                    status=401,
                 )
             else:
                 return render(
                     request,
                     self.template_name,
-                    {"errors": {"user_message": "invalid email address or password"}},
+                    {"errors": {"user_message": "something going wrong"}},
+                    status=401,
                 )
         except UserTodo.DoesNotExist as _:
             return render(
                 request,
                 self.template_name,
-                {"errors": {"user_message": "invalid email address or password"}},
+                {"errors": {"user_message": "something going wrong"}},
+                status=401,
             )
         except Exception as _:
             return render(
                 request,
                 self.template_name,
                 {"errors": {"user_message": "an error occured please try again!"}},
+                status=500,
             )
 
 
