@@ -804,24 +804,28 @@ class NewPasswordView(View):
                     request,
                     self.template_name,
                     {"errors": {"user_message": "unable to reset your account"}},
+                    status=401,
                 )
             else:
                 return render(
                     request,
                     self.template_name,
                     {"errors": user_form.errors, "user": user_form},
+                    status=401,
                 )
         except ResetPassword.DoesNotExist:
             return render(
                 request,
                 self.template_name,
                 {"errors": {"user_message": "invalid code"}},
+                status=500,
             )
         except Exception as _:
             return render(
                 request,
                 self.template_name,
                 {"errors": {"user_message": "an error occured please try again!"}},
+                status=500,
             )
 
 

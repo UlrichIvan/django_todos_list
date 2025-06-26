@@ -46,5 +46,9 @@ urlpatterns = [
     ),
     path("newpassword", NewPasswordView.as_view(), name="todo_user_new_password"),
     path("logout", LogOut.as_view(), name="logout"),
-    path("user/<uuid:pk>/profile", UserTodoUpdateAvatarView.as_view(), name="user_profile"),
+    path(
+        "user/<uuid:pk>/profile",
+        UserTodoUpdateAvatarView.as_view(),
+        name="user_profile",
+    ),
 ]
