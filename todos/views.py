@@ -617,13 +617,11 @@ class UserNewCodeFactor(View):
 
     def post(self, request) -> HttpResponse | None:
         user_code = UserNewCodeForm(request.POST)
-
         try:
             if user_code.is_valid():
                 data = user_code.cleaned_data
                 user = UserTodo.objects.get(email=data.get("email"))
                 user_factor = FactorAuth.objects.get(user=user)
-
                 if user.actived == True:
                     user_factor.code = get_code()
                     user_factor.updated_at = timezone.now()
@@ -655,18 +653,21 @@ class UserNewCodeFactor(View):
                             "user_message": "unable to verify your authentication"
                         }
                     },
+                    status=401,
                 )
             else:
                 return render(
                     request,
                     self.template_name,
                     {"errors": {"user_message": "invalid email address or password"}},
+                    status=401,
                 )
         except Exception as _:
             return render(
                 request,
                 self.template_name,
                 {"errors": {"user_message": "an error occured please try again!"}},
+                status=401,
             )
 
 
