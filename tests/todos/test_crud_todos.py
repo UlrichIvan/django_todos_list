@@ -221,3 +221,65 @@ class EditTodoViewTest(TestCase):
         self.assertEqual(
             res.context["errors"].get("title"), ["This field is required."]
         )
+
+
+class TodoDetailsTest(TestCase):
+    def setUp(self) -> None:
+        self.client = Client()
+        self.user_form = {
+            "first_name": "test1",
+            "last_name": "test2",
+            "email": "ab@gmail.com",
+            "actived": True,
+            "code": "97D08BB6",
+        }
+        self.password = "testazertyaa"
+        self.create_user()
+
+    def create_user(self):
+        self.user = UserTodo(
+            **self.user_form,
+            password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
+        )
+        self.user.save()
+        self.todo = Todo(
+            **{
+                "title": "Test Todo",
+                "content": "This is a test todo item.",
+                "done": False,
+                "expired_at": timezone.now() + datetime.timedelta(days=1),
+                "user_id": self.user,
+            }
+        )
+        self.todo.save()
+        self.token = get_jwt_token(
+            payload={
+                "is_auth": True,
+                "user_id": str(self.user.id),
+                "user_name": self.user.last_name,
+                "photo": None,
+                "iat": datetime.datetime.now(),
+                "exp": timezone.now() + datetime.timedelta(days=365),
+            }
+        )
+        session = self.client.session
+        session["token"] = self.token
+        session.save()
+
+    def test_edit_todo_get_404(self):
+        res = self.client.get(
+            path=reverse(
+                "todo_list:details_todo",
+                kwargs={"pk": "12345678-1234-5678-1234-567812345678"},
+            ),
+        )
+        self.assertEqual(res.status_code, 404)
+
+    def test_edit_todo_get_pass(self):
+        res = self.client.get(
+            path=reverse(
+                "todo_list:details_todo",
+                kwargs={"pk": self.todo.id},
+            ),
+        )
+        self.assertEqual(res.status_code, 200)
