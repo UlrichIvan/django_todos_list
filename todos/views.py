@@ -61,6 +61,7 @@ class TodosListView(View):
             return render(
                 request,
                 "500.html",
+                status=500
             )
 
 
