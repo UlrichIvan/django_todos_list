@@ -268,6 +268,7 @@ class UserCreate(View):
                     request,
                     self.template_name,
                     {"errors": user_form.errors, "user": user_form},
+                    status=200,
                 )
         except Exception as _:
             return render(

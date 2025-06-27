@@ -31,6 +31,12 @@ urlpatterns = [
     path(
         "active/account", UserActiveAccount.as_view(), name="todo_user_active_account"
     ),
+    path("logout", LogOut.as_view(), name="logout"),
+    path(
+        "user/<uuid:pk>/profile",
+        UserTodoUpdateAvatarView.as_view(),
+        name="user_profile",
+    ),
     path("new/code", UserNewCode.as_view(), name="todo_user_new_code"),
     path("login", UserLogin.as_view(), name="todo_user_login"),
     path("fact/auth", UserFactAuth.as_view(), name="todo_user_fact_auth"),
@@ -45,10 +51,4 @@ urlpatterns = [
         name="todo_user_reset_password",
     ),
     path("newpassword", NewPasswordView.as_view(), name="todo_user_new_password"),
-    path("logout", LogOut.as_view(), name="logout"),
-    path(
-        "user/<uuid:pk>/profile",
-        UserTodoUpdateAvatarView.as_view(),
-        name="user_profile",
-    ),
 ]
