@@ -34,6 +34,7 @@ class UserCreateTest(TestCase):
         self.assertRedirects(
             res, expected_url=reverse("todo_list:todo_user_active_account")
         )
+
     def test_post_fail(self):
         # user creation with invalid data
         res = self.client.post(
@@ -62,3 +63,50 @@ class UserCreateTest(TestCase):
         )
         self.assertEqual(res.status_code, 200)
         self.assertContains(res, "email already taken")
+
+
+class UserActiveAccountTest(TestCase):
+    def setUp(self) -> None:
+        self.client = Client()
+        self.code = "97D08BB6"
+        self.password = "testazertyaa"
+        self.user_form = {
+            "first_name": "test1",
+            "last_name": "test2",
+            "email": "ab@gmail.com",
+            "actived": False,
+            "code": self.code,
+        }
+
+    def test_index(self):
+        res = self.client.get(path=reverse("todo_list:todo_user_active_account"))
+        self.assertEqual(res.status_code, 200)
+
+    def create_user(self):
+        self.user = UserTodo(
+            **self.user_form,
+            password=bcrypt.hashpw(self.password.encode(), bcrypt.gensalt()).decode(),
+        )
+        self.user.save()
+
+    def test_post_pass(self):
+        self.create_user()
+        res = self.client.post(
+            path=reverse("todo_list:todo_user_active_account"),
+            data={"code": self.code},
+        )
+        self.assertEqual(res.status_code, 302)
+        self.assertRedirects(res, expected_url=reverse("todo_list:todo_user_login"))
+
+    def test_post_fail(self):
+        self.user_form["actived"] = True
+        self.create_user()
+
+        # user already activated
+        self.user.actived = True
+        self.user.save()
+        res = self.client.post(
+            path=reverse("todo_list:todo_user_active_account"),
+            data={"code": self.code},
+        )
+        self.assertEqual(res.status_code, 401)

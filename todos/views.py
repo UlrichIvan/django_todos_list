@@ -308,6 +308,7 @@ class UserActiveAccount(View):
                         request,
                         self.template_name,
                         {"errors": {"user_message": "your account already actived."}},
+                        status=401,
                     )
                 else:
                     # hours count in the pass since the creation account for currentime
@@ -350,6 +351,7 @@ class UserActiveAccount(View):
                     request,
                     self.template_name,
                     {"errors": {"user_message": "unable to active your account"}},
+                    status=401,
                 )
             except Exception:
                 return render(
