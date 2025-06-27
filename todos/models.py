@@ -88,7 +88,7 @@ class Todo(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(default=None, null=True, blank=True)
     expired_at = models.DateTimeField(default=None, null=True, blank=True)
-    user_id = models.ForeignKey(to=UserTodo, on_delete=models.SET_NULL, null=True)
+    user_id = models.ForeignKey(to=UserTodo, on_delete=models.CASCADE, null=True)
 
     def get_expired(self) -> str | None:
         return self.expired_at.strftime("%Y-%m-%dT%H:%M") if self.expired_at else None
@@ -127,7 +127,7 @@ class FactorAuth(models.Model):
     is_auth = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
-    
+
 
 class ResetPassword(models.Model):
     code = models.CharField(max_length=10, null=True, default=None, unique=True)

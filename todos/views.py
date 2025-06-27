@@ -58,11 +58,7 @@ class TodosListView(View):
                 },
             )
         except Exception as e:
-            return render(
-                request,
-                "500.html",
-                status=500
-            )
+            return render(request, "500.html", status=500)
 
 
 class AddTodo(View):
@@ -203,8 +199,7 @@ class TodoDelete(View):
 
     def post(self, _, id) -> HttpResponse | None:
         todo = get_object_or_404(Todo, pk=id)
-        todo.deleted_at = timezone.now()
-        todo.save()
+        todo.delete()
         return HttpResponseRedirect(redirect_to=reverse("todo_list:index"))
 
 
