@@ -2,7 +2,6 @@ from django.utils import timezone
 from django.db import models
 from django.core.validators import RegexValidator
 import uuid
-import mimetypes
 
 import magic
 
