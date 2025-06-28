@@ -448,7 +448,7 @@ class UserLogin(View):
         try:
             if login_form.is_valid():
                 data = login_form.cleaned_data
-                user = UserTodo.objects.get(email=data.get("email"))
+                user = UserTodo.objects.get(email=data.get("email"), company="internal")
                 if user.actived == True and bcrypt.checkpw(
                     str(data.get("password")).encode(),
                     str(user.password).encode(),
@@ -488,12 +488,19 @@ class UserLogin(View):
                     {"errors": {"user_message": "invalid email or password"}},
                     status=401,
                 )
+        except UserTodo.DoesNotExist:
+            return render(
+                request,
+                self.template_name,
+                {"errors": {"user_message": "invalid email or password"}},
+                status=401,
+            )
         except Exception as _:
             return render(
                 request,
                 self.template_name,
                 {"errors": {"user_message": "an error occured please try again!"}},
-                status=501,
+                status=500,
             )
 
 

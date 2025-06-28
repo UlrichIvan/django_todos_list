@@ -92,6 +92,18 @@ DATABASES = {
     }
 }
 
+if not DEBUG:
+    DATABASES = {
+        **DATABASES,
+        "OPTIONS": {
+            "sslmode": "require",
+        },
+        "DISABLE_SERVER_SIDE_CURSORS": True,
+        "CONN_MAX_AGE": 0,  # Connection max age in seconds
+        "ATOMIC_REQUESTS": True,  # Enable atomic requests
+        "CONN_HEALTH_CHECKS ": True,  # Enable connection health checks
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -125,7 +137,8 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
