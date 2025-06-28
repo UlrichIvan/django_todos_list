@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.views.generic.detail import DetailView
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
@@ -833,16 +833,38 @@ class NewPasswordView(View):
 
 
 class LogOut(View):
+    template_name = "todos/logout.html"
+
     def get(self, request: HttpRequest) -> HttpResponse:
+        user_todo: dict = getattr(request, "user_todo") or {}
+        if user_todo.get("user_id") and user_todo.get("is_auth"):
+            return render(
+                request, self.template_name, context={"user": user_todo}, status=200
+            )
+        else:
+            return HttpResponseRedirect(
+                redirect_to=reverse("todo_list:todo_user_login")
+            )
+
+    def post(self, request: HttpRequest) -> HttpResponse:
         try:
-            request.session.clear()
-            return HttpResponseRedirect(
-                redirect_to=reverse("todo_list:todo_user_login")
-            )
-        except (Session.DoesNotExist, Exception):
-            return HttpResponseRedirect(
-                redirect_to=reverse("todo_list:todo_user_login")
-            )
+            user_todo: dict = getattr(request, "user_todo") or {}
+            if user_todo.get("user_id") and user_todo.get("is_auth"):
+                request.session.clear()
+                return HttpResponseRedirect(
+                    redirect_to=reverse("todo_list:todo_user_login")
+                )
+            else:
+                return render(
+                    request,
+                    self.template_name,
+                    status=401,
+                    context={
+                        "user": user_todo,
+                    },
+                )
+        except Exception:
+            return render(request, "500.html", status=500)
 
 
 class UserTodoUpdateAvatarView(View):

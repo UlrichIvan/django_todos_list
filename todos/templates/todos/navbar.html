@@ -25,9 +25,16 @@
 			
 		</li>
 		<li class="nav-item logout mx-2" title="logout">
-			<a class="btn btn-outline-success fw-bolder" href="{% url 'todo_list:logout' %}">
+			<form action="{% url "todo_list:logout" %}" method="get">
+				<button 
+				type="submit" 
+				class="btn btn-outline-success text-capitalize fw-bolder" 
+				href="{% url 'todo_list:logout' %}"
+				>
 				log out
-			</a>
+			</button>
+			{% csrf_token %}
+			</form>
 		</li>
 		<li class="nav-item add_todo" title="add todo">
 			<a href="{% url 'todo_list:add_todo' %}">
