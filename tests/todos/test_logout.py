@@ -8,6 +8,7 @@ from todos.utils import get_jwt_token
 
 
 class LogoutTest(TestCase):
+
     def setUp(self) -> None:
         self.client = Client()
         self.user_form = {
@@ -18,7 +19,6 @@ class LogoutTest(TestCase):
             "code": "97D08BB6",
         }
         self.password = "testazertyaa"
-
     def create_user(self):
         self.user = UserTodo(
             **{
@@ -54,4 +54,3 @@ class LogoutTest(TestCase):
         res = self.client.post(path=reverse("todo_list:logout"), data=None)
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res["Location"], reverse("todo_list:todo_user_login"))
-    

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "todos.apps.TodosConfig",
     "google.apps.GoogleConfig",
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 
@@ -132,4 +133,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_URL = "/avatars/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "avatars")
 
-MAX_UPLOAD_SIZE_MB = 2
+MAX_UPLOAD_SIZE_MB = 1

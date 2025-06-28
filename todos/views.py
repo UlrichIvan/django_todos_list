@@ -190,7 +190,6 @@ class TodoDelete(View):
     def get(self, request, id) -> HttpResponse:
         todo = get_object_or_404(Todo, pk=id)
         user_todo = request.user_todo
-        print(user_todo)
         return render(
             request,
             self.template_name,
@@ -892,6 +891,7 @@ class UserTodoUpdateAvatarView(View):
             iat = user_todo.get("iat", 0)
             exp = user_todo.get("exp")
             dead_life = exp - (datetime.datetime.now().timestamp() - iat)
+
             if avatarForm.is_valid():
                 try:
                     user_avatar = UserAvatar.objects.get(user__id=pk)
@@ -917,14 +917,15 @@ class UserTodoUpdateAvatarView(View):
                     request.session["token"] = get_jwt_token(
                         payload={
                             "is_auth": True,
-                            "user_id": str(user_avatar.user.id),
-                            "user_name": user_avatar.user.last_name,
-                            "photo": user_avatar.avatar.url,
+                            "user_id": str(avatar.user.id),
+                            "user_name": avatar.user.last_name,
+                            "photo": avatar.avatar.url,
                             "iat": datetime.datetime.now(),
                             "exp": dead_life,
                         }
                     )
                     return HttpResponseRedirect(reverse("todo_list:index"))
+
             return render(
                 request,
                 self.template_name,
@@ -933,8 +934,5 @@ class UserTodoUpdateAvatarView(View):
                     "errors": avatarForm.errors,
                 },
             )
-        except Exception as e:
-            return render(
-                request,
-                "500.html",
-            )
+        except Exception:
+            return render(request, "500.html", status=500)
