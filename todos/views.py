@@ -479,6 +479,7 @@ class UserLogin(View):
                     return render(
                         request,
                         self.template_name,
+                        {"errors": {"user_message": "invalid email or password"}},
                         status=401,
                     )
             else:
