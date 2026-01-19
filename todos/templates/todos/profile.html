@@ -27,11 +27,16 @@
       <form class="form" method="POST" enctype="multipart/form-data">
         <div class="form-group">
           <div class="avatar profile d-flex justify-content-center">
-            <img
-              width="200"
-              src="{{user.photo}}"
-              alt="Your current profile"
-            />
+            {% if user.photo %}
+                <img
+                    width="200"
+                    src="{{user.photo}}"
+                    alt="Your current profile"
+                />
+			{% else %}
+				  <img src="{% static "todos/images/avatar.png"%}" width="200" alt="todo list"/>
+			{% endif %}
+           
           </div>
         </div>
         <div class="form-group mt-2">
